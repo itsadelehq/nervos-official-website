@@ -9146,7 +9146,7 @@ __metadata:
     react-resize-detector: ^9.0.0
     react-share: 4.4.1
     react-syntax-highlighter: ^16.1.1
-    react-tweet: ^3.2.1
+    react-tweet: ^3.3.1
     rehype-raw: ^6.1.1
     rehype-sanitize: ^6.0.0
     remark: 14.0.3
@@ -10350,17 +10350,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-tweet@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "react-tweet@npm:3.2.1"
+"react-tweet@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "react-tweet@npm:3.3.1"
   dependencies:
     "@swc/helpers": ^0.5.3
     clsx: ^2.0.0
     swr: ^2.2.4
   peerDependencies:
-    react: ">= 18.0.0"
-    react-dom: ">= 18.0.0"
-  checksum: 072625a9561913f653a9d2c86dd8b96cf7c67d48f684e2e3404533d675558ba482cf8a62e62135e2c876c70396df23d1ac8bf7a2b1dd705e85a483d22266da16
+    react: ^18.0.0 || ^19.0.0
+    react-dom: ^18.0.0 || ^19.0.0
+  checksum: a7d4552a8b72ad984a3964a3c7a6b2d9fdeaa7b178c8c8304fc716c77200b091464f95e7886c572f733ec914653b5e8211aa9b1045d3dd0d7737b334a394c4f6
   languageName: node
   linkType: hard
 
