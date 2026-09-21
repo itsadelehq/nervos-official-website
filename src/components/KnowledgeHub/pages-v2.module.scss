@@ -9,6 +9,11 @@
   color: var(--kbText);
 }
 
+.page .scrollingHeader {
+  position: relative;
+  background: var(--kbSurface);
+}
+
 .breadcrumb {
   margin-bottom: 32px;
   color: var(--kbPlaceholder);
@@ -17,15 +22,32 @@
 }
 
 .startHero {
-  padding-top: 45px;
+  padding-top: 0;
 }
 
-.startHero .breadcrumb {
-  margin-bottom: 24px;
+.breadcrumbDock {
+  position: sticky;
+  top: 0;
+  z-index: 19;
+  padding-top: 16px;
+  background: var(--kbSurface);
+}
+
+.breadcrumbDock .breadcrumb {
+  margin: 0;
+  padding-bottom: 24px;
+}
+
+.startHeroCopy,
+.topicHero {
+  transform: translateY(calc(var(--heroFade) * -24px));
+  transform-origin: top left;
+  opacity: calc(1 - var(--heroFade));
+  will-change: opacity, transform;
 }
 
 .topicHero {
-  padding-top: 48px;
+  padding-top: 0;
 }
 
 .startHero h1 {
@@ -56,71 +78,37 @@
 
 .stepsLabel {
   gap: 8px;
-  margin: 48px 0 16px;
+  margin: 0 0 16px;
   @include tokens.type(h4);
+}
+
+.stepsRail {
+  position: sticky;
+  top: var(--breadcrumbHeight, 55px);
+  z-index: 18;
+  background: var(--kbSurface);
+  will-change: padding-top;
 }
 
 .stepNav,
 .subjectNav {
-  gap: 16px;
-}
-
-/* SubjectCard owns its selected/step variants; containers only own layout. */
-.stepNav a,
-.subjectNav button {
-  min-height: 116px;
-  padding: 8px 16px;
-  color: inherit;
-  line-height: 1.2;
-  letter-spacing: 0;
-  background: var(--kbSurface);
-  border-color: var(--kbBorder);
-}
-
-.stepNav a {
-  min-width: 227px;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 1.5;
-  text-transform: none;
-}
-
-.stepNav {
   grid-template-columns: repeat(5, minmax(227px, 1fr));
+  gap: 16px;
+  margin: -10px;
+
+  /* Space inside the scrollport protects the lift and keyboard focus outline. */
+  padding: 10px;
   overflow-x: auto;
-}
-
-.stepNav a > span {
-  font-weight: inherit;
-  font-size: inherit;
-  line-height: inherit;
-}
-
-.stepNav a > span:first-child {
-  font-weight: 300;
-  font-size: 32px;
-  line-height: 1;
-}
-
-.stepNav [aria-current],
-.subjectNav [aria-pressed='true'] {
-  color: white;
-  background: var(--kbAccent);
-  border-color: var(--kbAccent);
-}
-
-.subjectNav button {
-  font-size: 14px;
-}
-
-.subjectNav button[aria-pressed='true'] img {
-  filter: brightness(0) invert(1);
 }
 
 .guideSteps {
   position: relative;
   gap: 24px;
   margin-top: 48px;
+}
+
+.guideSteps > section {
+  scroll-margin-top: calc(var(--breadcrumbHeight, 55px) + 246px);
 }
 
 .guideSteps::before {
@@ -150,10 +138,22 @@
 }
 
 .topicArticles {
-  margin-top: 32px;
+  margin-top: 0;
+}
+
+.topicRail {
+  position: sticky;
+  top: var(--breadcrumbHeight, 55px);
+  z-index: 18;
+  background: var(--kbSurface);
+}
+
+.topicRail .subjectsLabel {
+  margin-top: 0 !important;
 }
 
 .topicToolbar {
+  margin-top: 32px;
   padding-bottom: 24px;
   border-color: var(--kbDivider);
 }
@@ -174,7 +174,11 @@
 
 .controls input {
   height: 6px;
-  background: linear-gradient(to right, var(--kbDisabled) 50%, var(--kbDivider) 50%);
+  background: linear-gradient(
+    to right,
+    var(--kbDisabled) var(--rangeProgress, 50%),
+    var(--kbDivider) var(--rangeProgress, 50%)
+  );
   border-radius: 46px;
   appearance: none;
   accent-color: var(--kbDisabled);
@@ -200,7 +204,76 @@
 }
 
 .filterButton {
+  font-weight: 500;
   font-size: 14px;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.gridReset {
+  color: var(--kbMuted);
+}
+
+.gridIcon {
+  display: block;
+  width: 21px;
+  height: 21px;
+  background: currentcolor;
+  mask: url('/images/knowledge-hub/topicBody-imgEpMenu.svg') center / contain no-repeat;
+}
+
+.filterButton:is(:hover, :focus-visible, [data-open]) {
+  color: white;
+  background: var(--kbDark);
+}
+
+.filterButton:is(:hover, :focus-visible, [data-open]) img {
+  filter: brightness(0) invert(1);
+}
+
+.filterMenu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.filterOptions {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+  width: 200px;
+  padding: 6px;
+  background: var(--kbSurface);
+  border: 1px solid var(--kbBorder);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgb(17 17 17 / 8%);
+}
+
+.filterOption {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  color: var(--kbText);
+  font-weight: 500;
+  font-size: 14px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.filterOption[data-focus] {
+  background: var(--kbInput);
+}
+
+.filterOption:disabled {
+  color: var(--kbPlaceholder);
+  cursor: default;
 }
 
 .topicGrid {
@@ -250,6 +323,10 @@
 
   .startHero,
   .topicHero {
+    padding-top: 0;
+  }
+
+  .topicHero {
     padding-top: 32px;
   }
 
@@ -271,6 +348,10 @@
     margin-top: 24px;
   }
 
+  .guideSteps > section {
+    scroll-margin-top: calc(var(--breadcrumbHeight, 55px) + 211px);
+  }
+
   .relatedHubs {
     margin-bottom: 56px;
   }
@@ -285,5 +366,12 @@
 
   .pill {
     font-size: 12px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .startHeroCopy,
+  .topicHero {
+    transform: none;
   }
 }

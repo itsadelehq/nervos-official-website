@@ -1,11 +1,44 @@
 import clsx from 'clsx'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import { Icon } from './Icon'
 import type { guideSteps } from './guide-data'
 import styles from './components.module.scss'
 
 const numbers = ['One', 'Two', 'Three', 'Four', 'Five', 'Six']
 const articleHref = (title: string) => `/kb/article?title=${encodeURIComponent(title)}`
+
+export function ArrowButton({
+  children,
+  href,
+  className,
+  onClick,
+}: {
+  children: ReactNode
+  href?: string
+  className?: string
+  onClick?: () => void
+}) {
+  const content = (
+    <>
+      {children}
+      <span className={styles.arrowButtonIcon} aria-hidden="true">
+        →
+      </span>
+    </>
+  )
+  const classes = clsx(styles.arrowButton, className)
+
+  return href ? (
+    <Link className={classes} href={href}>
+      {content}
+    </Link>
+  ) : (
+    <button type="button" className={classes} onClick={onClick}>
+      {content}
+    </button>
+  )
+}
 
 export function SubjectCard({
   title,
@@ -32,7 +65,7 @@ export function SubjectCard({
       <span>{title}</span>
     </>
   )
-  const className = clsx(styles.subject, selected && styles.selected, step && styles.stepSubject)
+  const className = clsx(styles.subject, selected && styles.selected)
   return href ? (
     <a href={href} className={className} aria-current={selected ? 'step' : undefined}>
       {content}
@@ -50,11 +83,16 @@ export function ReadingList({ titles, compact = false }: { titles: string[]; com
       {titles.map((title, index) => (
         <li key={`${title}-${index}`}>
           <Link href={articleHref(title)}>
-            <span>{title}</span>
-            <small>
-              <Icon name="topics-imgLayer15" size={12} />
-              {compact ? '5m' : '5 min read'}
-            </small>
+            <span className={styles.readingTitle}>{title}</span>
+            <span className={styles.readingAction}>
+              <small>
+                <Icon name="topics-imgLayer15" size={12} />
+                {compact ? '5m' : '5 min read'}
+              </small>
+              <span className={styles.readingArrow} aria-hidden="true">
+                →
+              </span>
+            </span>
           </Link>
         </li>
       ))}

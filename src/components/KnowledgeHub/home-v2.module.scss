@@ -6,8 +6,10 @@
 
   --headerHeight: 80px;
 
+  overflow-x: clip;
   color: var(--kbText);
   background: var(--kbSurface);
+  overscroll-behavior-x: none;
 
   h2 {
     @include tokens.type(h2);
@@ -15,6 +17,18 @@
 
   input::placeholder {
     color: var(--kbPlaceholder);
+  }
+
+  button {
+    font-weight: 500;
+  }
+
+  input:is(:autofill, :-webkit-autofill) {
+    // Cover the browser's forced autofill tint without disabling autofill.
+    box-shadow: inset 0 0 0 1000px var(--kbFieldBackground, var(--kbSurface));
+    transition: box-shadow 180ms ease;
+    -webkit-text-fill-color: var(--kbText);
+    caret-color: var(--kbText);
   }
 }
 
@@ -55,21 +69,17 @@
   isolation: isolate;
 }
 
-.guideBanner::before {
+.guideLife {
   position: absolute;
   top: 0;
   right: 0;
-  width: 468px;
-  height: 340px;
-  background: url('/images/knowledge-hub/guide-pixels.jpg') top right / 100% 100% no-repeat;
-  mix-blend-mode: lighten;
-  content: '';
+  width: 36%;
+  height: 100%;
   pointer-events: none;
 }
-@media (width >= 751px) and (width <= 1150px) {
-  .guideBanner::before {
-    opacity: 0.3;
-  }
+
+.guideContent {
+  max-width: calc(64% - 32px);
 }
 
 .guideContent .eyebrow {
@@ -86,14 +96,45 @@
   @include tokens.type(subheader);
 }
 
+.newsletterCopy form {
+  --kbFieldBackground: var(--kbSurface);
+
+  margin-top: 48px;
+  padding-right: 8px;
+  padding-left: 24px;
+}
+
 .guideButton {
   width: 336px;
   height: 56px;
   margin-top: 32px;
+  font-weight: 500;
   font-size: 16px !important;
   letter-spacing: 0;
   text-transform: none;
   background: var(--kbAccent);
+  transition: background-color 220ms ease;
+}
+
+.guideButton span {
+  display: inline-block;
+  transition: transform 220ms ease;
+}
+
+.guideButton:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guideButton,
+  .guideButton span {
+    transition: none;
+  }
+
+  .guideButton:is(:hover, :focus-visible) span {
+    transform: none;
+  }
 }
 
 .topics {
@@ -121,7 +162,44 @@
 }
 
 .popularHeader .eyebrow {
+  align-items: center;
   margin-bottom: 8px;
+  line-height: 20px;
+}
+
+.resourceCard p {
+  margin-top: 16px;
+  color: var(--kbMuted);
+  transition: color 220ms ease;
+  @include tokens.type(label);
+}
+
+.resourceCard {
+  color: var(--kbText);
+  background: var(--kbSurface);
+  transition:
+    transform 220ms ease,
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+.resourceCard img {
+  filter: brightness(0) invert(89%);
+  transition: filter 220ms ease;
+}
+
+.resourceCard:first-child {
+  color: var(--kbText);
+  background: var(--kbSurface);
+}
+
+.resourceCard:focus-visible {
+  outline: 2px solid var(--kbAccent);
+  outline-offset: 3px;
+}
+
+.popularHeader .eyebrow > img {
+  display: block !important;
 }
 
 .popularGrid {
@@ -133,8 +211,17 @@
 }
 
 .searchWrap form {
+  --kbFieldBackground: var(--kbInput);
+
   height: 48px;
   background: var(--kbInput);
+  transition: background-color 180ms ease;
+}
+
+.searchWrap form:is(:hover, :focus-within) {
+  --kbFieldBackground: var(--kbDivider);
+
+  background: var(--kbDivider);
 }
 
 .allArticles {
@@ -143,11 +230,110 @@
   font-size: 14px !important;
   letter-spacing: 0;
   text-transform: none;
-  border-color: var(--kbText);
 }
 
 .searchWrap input {
   @include tokens.type(body);
+}
+
+.searchWrap input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.clearSearch:focus-visible {
+  border-radius: 50%;
+  outline: 2px solid var(--kbAccent);
+  outline-offset: 2px;
+}
+
+.searchWrap form .clearSearch {
+  flex-shrink: 0;
+  padding: 0 4px;
+  color: var(--kbMuted);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.searchResults {
+  top: calc(100% + 8px);
+  z-index: 10;
+  box-sizing: border-box;
+  max-height: min(360px, 60vh);
+  padding: 8px;
+  overflow-y: auto;
+  color: var(--kbText);
+  background: var(--kbSurface);
+  border: 1px solid var(--kbBorder);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgb(17 17 17 / 8%);
+}
+
+.searchCaption {
+  gap: 16px;
+  padding: 4px 8px 8px;
+  color: var(--kbMuted);
+  @include tokens.type(body2);
+}
+
+.searchCaption button {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  color: var(--kbMuted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
+}
+
+.searchResults > button,
+.searchResults > p {
+  margin: 0;
+  padding: 12px;
+  @include tokens.type(subheader);
+}
+
+.searchResults > p {
+  color: var(--kbMuted);
+}
+
+.searchResults > button {
+  color: var(--kbText);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
+}
+
+.newsletterCopy form button {
+  height: 32px;
+  padding: 4px 24px;
+  background: var(--kbAccent);
+  transition: background-color 220ms ease;
+  @include tokens.type(body);
+}
+
+.searchResults button:is(:hover, :focus-visible) {
+  color: var(--kbBrand);
+  background: var(--kbInput);
+}
+
+.searchResults button:focus-visible {
+  outline: 2px solid var(--kbAccent);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .searchWrap form,
+  .searchResults button {
+    transition: none;
+  }
 }
 
 .page .searchWrap input:focus,
@@ -160,6 +346,16 @@
 .popularCard {
   color: white;
   background: var(--kbDark);
+  transition: transform 220ms ease;
+}
+
+.popularCard:is(:hover, :focus-visible) {
+  transform: translateY(-4px);
+}
+
+.popularCard:focus-visible {
+  outline: 2px solid var(--kbAccent);
+  outline-offset: 3px;
 }
 
 .popularCard h3 {
@@ -178,6 +374,16 @@
   font-size: 11px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .popularCard {
+    transition: none;
+  }
+
+  .popularCard:is(:hover, :focus-visible) {
+    transform: none;
+  }
+}
+
 .newsletter {
   background: var(--kbBrandSurface);
 }
@@ -194,21 +400,34 @@
   @include tokens.type(subheader);
 }
 
-.newsletterCopy form {
-  margin-top: 48px;
-  padding-right: 8px;
-  padding-left: 24px;
-}
-
 .newsletterCopy input {
   @include tokens.type(body);
 }
 
-.newsletterCopy form button {
-  height: 32px;
-  padding: 4px 24px;
-  background: var(--kbAccent);
-  @include tokens.type(body);
+.newsletterCopy form button:is(:hover, :focus-visible) {
+  background: #9487ff;
+}
+
+.newsletterCopy form button:focus-visible {
+  outline: 2px solid var(--kbDark);
+  outline-offset: 2px;
+}
+
+.newsletterCopy form button span {
+  display: inline-block;
+  transition: transform 220ms ease;
+}
+
+.guideButton:is(:hover, :focus-visible) {
+  background: #9487ff;
+
+  span {
+    transform: translateX(8px);
+  }
+}
+
+.newsletterCopy form button:is(:hover, :focus-visible) span {
+  transform: translateX(8px);
 }
 
 .newsletterCopy > small {
@@ -221,10 +440,6 @@
   gap: 16px;
   max-width: 629px;
 }
-
-.resourceCard {
-  color: var(--kbText);
-}
 @media (width >= 751px) {
   .resourceCard {
     gap: 32px;
@@ -232,31 +447,42 @@
   }
 }
 
-.resourceCard:first-child {
+.resourceCard:is(:hover, :focus-visible) {
+  color: #fff;
   background: var(--kbDark);
+  transform: translateY(-4px);
+
+  img {
+    filter: none;
+  }
+
+  p {
+    color: var(--kbDisabled);
+  }
 }
 
 .resourceCard h3 {
   @include tokens.type(h5);
 }
 
-.resourceCard p {
-  margin-top: 16px;
-  color: var(--kbMuted);
-  @include tokens.type(label);
-}
-
-.resourceCard:first-child p {
-  margin-top: 8px;
-  color: var(--kbDisabled);
-}
 @media (width >= 751px) {
   .resourceCard h3 {
     min-height: 2.6em;
   }
+}
 
-  .resourceCard:first-child p {
-    margin-top: 16px;
+@media (prefers-reduced-motion: reduce) {
+  .resourceCard,
+  .resourceCard img,
+  .resourceCard p,
+  .newsletterCopy form button,
+  .newsletterCopy form button span {
+    transition: none;
+  }
+
+  .resourceCard:is(:hover, :focus-visible),
+  .newsletterCopy form button:is(:hover, :focus-visible) span {
+    transform: none;
   }
 }
 @media (width <= 1100px) {
@@ -276,6 +502,14 @@
   .newsletterCopy {
     width: 100%;
   }
+
+  .guideLife {
+    display: none;
+  }
+
+  .guideContent {
+    max-width: none;
+  }
 }
 @media (width <= 750px) {
   .page {
@@ -294,14 +528,6 @@
   .guideBanner {
     margin-top: 40px;
     padding: 32px 24px 56px;
-  }
-
-  .guideBanner::before {
-    top: auto;
-    bottom: 0;
-    width: 234px;
-    height: 170px;
-    opacity: 0.18;
   }
 
   .guideContent h2 {
@@ -324,5 +550,12 @@
 
   .newsletterCopy form button {
     padding: 4px 12px;
+  }
+}
+
+@media (width < 280px) {
+  .resourceCard {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

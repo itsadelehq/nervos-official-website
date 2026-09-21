@@ -2,10 +2,26 @@
 @import './pages.module';
 
 /* Updated article frame 22:2582. Photography remains a deliberate placeholder. */
+.scrollingHeader.scrollingHeader {
+  position: relative;
+}
+
+.mobileContents {
+  display: none;
+}
+
+.articleBody [id] {
+  scroll-margin-top: calc(var(--articleNavHeight) + 24px);
+}
+
 .articleNav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   min-height: 64px;
   margin-top: 48px;
-  padding-bottom: 16px;
+  padding: 12px 0;
+  background: var(--kbSurface);
   border-bottom: 1px solid var(--kbDivider);
 }
 
@@ -23,8 +39,39 @@
 .writeArticle {
   min-height: 30px;
   padding: 5px 8px;
+  color: var(--kbText);
+  font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
+  background: var(--kbSurface);
+  transition:
+    color 220ms ease,
+    background-color 220ms ease;
+}
+
+.writeArticle img {
+  transition: filter 220ms ease;
+}
+
+.writeArticle:is(:hover, :focus-visible) {
+  color: var(--kbInverseText);
+  background: var(--kbDark);
+}
+
+.writeArticle:is(:hover, :focus-visible) img {
+  filter: brightness(0) invert(1);
+}
+
+.writeArticle:focus-visible {
+  outline: 2px solid var(--kbAccent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .writeArticle,
+  .writeArticle img {
+    transition: none;
+  }
 }
 
 .articleLayout {
@@ -130,6 +177,13 @@
   background: var(--kbDivider);
 }
 
+.discoverBanner > div,
+.discoverCompact > div,
+.discoverAction {
+  position: relative;
+  z-index: 1;
+}
+
 .tokenGrid > div:last-child {
   color: white;
   background: var(--kbBrand);
@@ -155,27 +209,13 @@
   isolation: isolate;
 }
 
-.discoverBanner::before {
+.discoverLife {
   position: absolute;
-  top: 0;
-  right: 0;
-  z-index: -1;
-  width: 265px;
-  height: 172px;
-  background: url('/images/knowledge-hub/discover-banner-pixels.jpg') center / 100% 100% no-repeat;
-  mix-blend-mode: screen;
-  content: '';
-  pointer-events: none;
-}
-
-.discoverBanner::after {
-  position: absolute;
-  top: 38px;
-  left: 24px;
-  width: 25px;
-  height: 42px;
-  background: url('/images/knowledge-hub/discover-banner-mark.png') center / contain no-repeat;
-  content: '';
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.94;
   pointer-events: none;
 }
 
@@ -197,22 +237,46 @@
   margin: 0;
 }
 
-.discoverBanner a,
-.discoverCompact a {
+.discoverBanner .discoverButton,
+.discoverCompact .discoverButton {
   @include tokens.type(body2);
 
   height: 32px;
   padding: 5px 16px;
+  color: white;
   white-space: nowrap;
   text-transform: none;
+  background: transparent;
+  border-color: white;
+  border-radius: 3px;
 }
 
-.discoverBanner a {
+.discoverAction {
+  flex-shrink: 0;
+}
+
+.discoverBanner .discoverAction {
   align-self: flex-end;
 }
 
+.discoverBanner .discoverButton:is(:hover, :focus-visible),
+.discoverCompact .discoverButton:is(:hover, :focus-visible) {
+  color: var(--kbDark);
+  background: white;
+}
+
 .sidebar {
+  display: grid;
+  grid-template-rows: auto minmax(min-content, 1fr) repeat(4, auto);
   gap: 24px;
+  align-content: stretch;
+}
+
+.stickyContents {
+  position: sticky;
+  top: calc(var(--articleNavHeight) + 24px);
+  max-height: calc(100dvh - var(--articleNavHeight) - 48px);
+  overflow-y: auto;
 }
 
 .discoverCompact {
@@ -227,19 +291,6 @@
 
 .sidebar > .discoverCompact {
   margin-bottom: 8px;
-}
-
-.discoverCompact::before {
-  position: absolute;
-  top: -250px;
-  right: -121px;
-  z-index: -1;
-  width: 265px;
-  height: 427px;
-  background: url('/images/knowledge-hub/discover-pixels.jpg') center / 100% 100% no-repeat;
-  mix-blend-mode: lighten;
-  content: '';
-  pointer-events: none;
 }
 
 .sidebar .discoverCompact h2 {
@@ -258,6 +309,19 @@
   position: relative;
   padding: 8px 0;
   color: var(--kbMuted);
+  transition: color 180ms ease;
+}
+
+.recentPosts a {
+  color: var(--kbBrand);
+}
+
+.moreArticles > a:last-child {
+  border-bottom: 0;
+}
+
+.toc a:not([aria-current]):is(:hover, :focus-visible) {
+  color: var(--kbBrand);
 }
 
 .toc a[aria-current] {
@@ -281,8 +345,21 @@
   gap: 8px;
 }
 
-.recentPosts a {
-  color: var(--kbBrand);
+.recentPostArrow {
+  display: inline-block;
+  margin-left: 4px;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.recentPosts a:is(:hover, :focus-visible) .recentPostArrow {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recentPostArrow {
+    transition: none;
+  }
 }
 
 .categories {
@@ -322,14 +399,18 @@
   border-top: 1px solid var(--kbDivider);
 }
 
-.moreArticles > a:last-child {
-  border-bottom: 0;
-}
-
 .backToTop {
+  position: fixed;
+  right: 32px;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  z-index: 30;
   width: 48px;
   height: 48px;
-  margin-right: 32px;
+  margin: 0;
+}
+
+.articlePage ~ footer {
+  border-top: 1px solid var(--kbDivider);
 }
 
 @media (width <= 1100px) {
@@ -347,9 +428,39 @@
 }
 @media (width <= 760px) {
   .articleNav {
+    flex-wrap: wrap;
     gap: 12px;
     width: calc(100% - 40px);
     margin-top: 24px;
+  }
+
+  .mobileContents {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    color: var(--kbMuted);
+    @include tokens.type(body2);
+  }
+
+  .mobileContents select {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 12px;
+    color: var(--kbText);
+    font: inherit;
+    background: var(--kbInput);
+    border: 1px solid var(--kbBorder);
+    border-radius: 6px;
+  }
+
+  .mobileContents select:focus-visible {
+    outline: 2px solid var(--kbAccent);
+    outline-offset: 2px;
+  }
+
+  .tocSlot {
+    display: none;
   }
 
   .articleBrand {
@@ -387,10 +498,6 @@
     padding: 24px;
   }
 
-  .discoverBanner::after {
-    top: 24px;
-  }
-
   .discoverBanner h2 {
     width: auto;
   }
@@ -399,8 +506,8 @@
     padding-left: 40px;
   }
 
-  .discoverBanner::before {
-    opacity: 0.25;
+  .discoverLife {
+    opacity: 0.42;
   }
 
   .discoverBanner > div {
@@ -408,11 +515,12 @@
     min-width: 0;
   }
 
-  .discoverBanner a {
+  .discoverBanner .discoverAction {
     align-self: flex-start;
   }
 
   .sidebar {
+    display: flex;
     max-width: 100%;
   }
 
@@ -421,6 +529,6 @@
   }
 
   .backToTop {
-    margin-right: 20px;
+    right: 20px;
   }
 }

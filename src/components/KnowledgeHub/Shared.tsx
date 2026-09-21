@@ -10,6 +10,8 @@ import revisedBase from './home-v2.module.scss'
 import revisedStyles from './pages-v2.module.scss'
 import { KnowledgeFooter } from './KnowledgeFooter'
 import articleStyles from './article-v2.module.scss'
+import { ArrowButton } from './Components'
+import { GuideLife } from './GuideLife'
 
 export const articleHref = (title?: string) =>
   title ? `/kb/article?title=${encodeURIComponent(title)}` : '/kb/article'
@@ -19,11 +21,13 @@ export function PreviewPage({
   children,
   newsletter = true,
   revision = false,
+  headerClassName,
 }: {
   title: string
   children: ReactNode
   newsletter?: boolean
   revision?: boolean
+  headerClassName?: string
 }) {
   return (
     <>
@@ -34,7 +38,7 @@ export function PreviewPage({
       <Page className={revision ? clsx(revisedBase.page, revisedStyles.page) : clsx(base.page, styles.page)}>
         {({ renderHeader, renderFooter }) => (
           <>
-            {renderHeader({ variant: 'knowledgeHub' })}
+            {renderHeader({ variant: 'knowledgeHub', className: headerClassName })}
             {children}
             {newsletter && <Newsletter />}
             {revision ? <KnowledgeFooter /> : renderFooter()}
@@ -79,10 +83,9 @@ export function RelatedHubs({ revision = false }: { revision?: boolean }) {
       </div>
       <div className={design.pills}>
         {['Blockchain Architecture', 'Blockchain VMs & RISC-V', 'Nervos CKB'].map(name => (
-          <Link className={design.pill} key={name} href={`/kb/topic?hub=${encodeURIComponent(name)}`}>
+          <ArrowButton className={design.pill} key={name} href={`/kb/topic?hub=${encodeURIComponent(name)}`}>
             {name}
-            <span aria-hidden="true">→</span>
-          </Link>
+          </ArrowButton>
         ))}
       </div>
     </section>
@@ -93,11 +96,21 @@ export function DiscoverBanner({ compact = false, revision = false }: { compact?
   const design = revision ? articleStyles : styles
   return (
     <aside className={compact ? design.discoverCompact : design.discoverBanner}>
-      <div>
+      <GuideLife
+        className={design.discoverLife}
+        density={compact ? 0.18 : 0.16}
+        exclusionPadding={compact ? 12 : 18}
+        exclusionSelector="[data-life-exclusion]"
+      />
+      <div data-life-exclusion>
         <h2>Meet the blockchain built for what comes next.</h2>
         <p>Explore the ideas, architecture, and ecosystem behind CKB.</p>
       </div>
-      <Link href="/kb/start-here">Discover CKB</Link>
+      <span className={design.discoverAction} data-life-exclusion>
+        <ArrowButton className={design.discoverButton} href="/kb/start-here">
+          Discover CKB
+        </ArrowButton>
+      </span>
     </aside>
   )
 }

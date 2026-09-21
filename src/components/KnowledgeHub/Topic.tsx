@@ -1,11 +1,14 @@
 import clsx from 'clsx'
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { useRouter } from 'next/router'
 import { Icon } from './Home'
 import { hubs } from './fixtures'
 import { Breadcrumb, PreviewPage, RelatedHubs } from './Shared'
 import styles from './pages-v2.module.scss'
 import { SubjectCard, ArticleCard } from './Components'
+import { useHeroScroll } from './useHeroScroll'
 
 const subjects = [
   {
@@ -38,6 +41,7 @@ const previewPosts = Array.from({ length: 17 }, (_, index) => ({
   title: titles[index % 3] ?? titles[0] ?? '',
   subject: index % 4,
   tag: index < 4 ? (tags[index] ?? 'Scaling') : 'Scaling',
+  publishedAt: '2023-02-28',
 }))
 
 export function Topic() {
@@ -48,31 +52,29 @@ export function Topic() {
   const heading = all ? 'All articles' : (hub?.name ?? 'Blockchain Scalability')
   const [subjectIndex, setSubjectIndex] = useState(0)
   const [density, setDensity] = useState(4)
-  const [mixed, setMixed] = useState(true)
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const [sort, setSort] = useState('design')
+  const { heroFade, breadcrumbHeight, breadcrumbRef } = useHeroScroll()
   const subject = subjects[subjectIndex] ?? {
     name: 'View all',
     icon: 'imgGroup60',
     description: 'Browse all preview articles.',
   }
-  const filtered = previewPosts.filter(
-    post =>
-      (subjectIndex === 0 || subjectIndex === 4 || post.subject === subjectIndex) &&
-      post.title.toLowerCase().includes(search.toLowerCase()),
-  )
-  const sorted = sort === 'title' ? [...filtered].sort((a, b) => a.title.localeCompare(b.title)) : filtered
-  const posts = sorted
+  const posts = previewPosts
+    .filter(post => subjectIndex === 0 || subjectIndex === 4 || post.subject === subjectIndex)
+    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
   const selectSubject = (index: number) => {
     setSubjectIndex(index)
   }
 
   return (
-    <PreviewPage title={heading} revision>
-      <div className={styles.container}>
-        <header className={styles.topicHero}>
+    <PreviewPage title={heading} revision headerClassName={styles.scrollingHeader}>
+      <div
+        className={styles.container}
+        style={{ '--heroFade': heroFade, '--breadcrumbHeight': `${breadcrumbHeight}px` } as CSSProperties}
+      >
+        <div className={styles.breadcrumbDock} ref={breadcrumbRef}>
           <Breadcrumb current={heading} revision />
+        </div>
+        <header className={styles.topicHero}>
           <h1>{heading}</h1>
           <p>
             {all
@@ -82,22 +84,22 @@ export function Topic() {
                 : 'Blockchain scalability is the study of how blockchain networks increase throughput, reduce costs, and support more complex applications. This hub covers Layer 1 and Layer 2 approaches, including rollups, payment channels, Lightning, RGB++, and Fiber, and how Nervos CKB scales without sacrificing security or decentralization.'}
           </p>
         </header>
-        <h2 className={styles.subjectsLabel}>
-          <Icon name="topicHero-imgInterfaceBookOpen" size={24} />
-          Subjects
-        </h2>
-        <nav className={styles.subjectNav} aria-label="Subjects">
-          {subjects.map((item, index) => (
-            <SubjectCard
-              key={item.name}
-              title={item.name}
-              icon={`topicControls-${item.icon}`}
-              selected={subjectIndex === index}
-              onClick={() => selectSubject(index)}
-            />
-          ))}
-        </nav>
-        <section className={styles.topicArticles} aria-labelledby="subject-title">
+        <div className={styles.topicRail} style={{ paddingTop: `${48 * (1 - heroFade)}px` }}>
+          <h2 className={styles.subjectsLabel}>
+            <Icon name="topicHero-imgInterfaceBookOpen" size={24} />
+            Subjects
+          </h2>
+          <nav className={styles.subjectNav} aria-label="Subjects">
+            {subjects.map((item, index) => (
+              <SubjectCard
+                key={item.name}
+                title={item.name}
+                icon={`topicControls-${item.icon}`}
+                selected={subjectIndex === index}
+                onClick={() => selectSubject(index)}
+              />
+            ))}
+          </nav>
           <div className={styles.topicToolbar}>
             <div>
               <h2 id="subject-title">{subject.name === 'View all' ? 'All subjects' : subject.name}</h2>
@@ -106,13 +108,12 @@ export function Topic() {
             <div className={styles.controls}>
               <button
                 className={styles.gridReset}
-                aria-label="Restore Figma mixed card layout"
+                aria-label="Reset to four cards per row"
                 onClick={() => {
-                  setMixed(true)
                   setDensity(4)
                 }}
               >
-                <Icon name="topicBody-imgEpMenu" size={21} />
+                <span className={styles.gridIcon} aria-hidden="true" />
               </button>
               <input
                 aria-label="Cards per row"
@@ -120,84 +121,56 @@ export function Topic() {
                 min="3"
                 max="5"
                 value={density}
+                style={{ '--rangeProgress': `${((density - 3) / 2) * 100}%` } as CSSProperties}
                 onChange={event => {
                   setDensity(Number(event.target.value))
-                  setMixed(false)
                 }}
               />
-              <button
-                className={styles.filterButton}
-                aria-expanded={filterOpen}
-                aria-controls="article-filters"
-                onClick={() => setFilterOpen(!filterOpen)}
-              >
-                <Icon name="topicBody-imgInterfaceSlider03" size={24} />
-                Filter
-              </button>
+              <Menu as="div" className={styles.filterMenu}>
+                <MenuButton className={styles.filterButton}>
+                  <Icon name="topicBody-imgInterfaceSlider03" size={24} />
+                  Filter
+                </MenuButton>
+                <MenuItems className={styles.filterOptions}>
+                  <MenuItem>
+                    <button className={styles.filterOption} type="button">
+                      Latest to oldest <Icon name="interface-check" size={16} />
+                      <span className={styles.srOnly}> (selected)</span>
+                    </button>
+                  </MenuItem>
+                  <MenuItem disabled>
+                    <button className={styles.filterOption} type="button" disabled>
+                      Most popular
+                    </button>
+                  </MenuItem>
+                  <MenuItem disabled>
+                    <button className={styles.filterOption} type="button" disabled>
+                      Must reads
+                    </button>
+                  </MenuItem>
+                </MenuItems>
+              </Menu>
             </div>
           </div>
-          {filterOpen && (
-            <div id="article-filters" className={styles.filterPanel}>
-              <label>
-                Search preview titles
-                <input
-                  type="search"
-                  value={search}
-                  onChange={event => {
-                    setSearch(event.target.value)
-                  }}
-                />
-              </label>
-              <label>
-                Sort by
-                <select value={sort} onChange={event => setSort(event.target.value)}>
-                  <option value="design">Design order</option>
-                  <option value="title">Title A–Z</option>
-                </select>
-              </label>
-              <button
-                onClick={() => {
-                  setSearch('')
-                  setSort('design')
-                  selectSubject(0)
-                }}
-              >
-                Reset filters
-              </button>
-            </div>
-          )}
-          <div className={clsx(styles.topicGrid, mixed ? styles.mixedGrid : styles[`density${density}`])}>
-            {posts.map((post, index) => (
+        </div>
+        <section className={styles.topicArticles} aria-labelledby="subject-title">
+          <div className={clsx(styles.topicGrid, styles[`density${density}`])}>
+            {posts.map(post => (
               <ArticleCard
                 key={post.id}
                 title={post.title}
-                tag={post.tag}
-                size={
-                  mixed
-                    ? index < 4
-                      ? 'medium'
-                      : index < 14
-                        ? 'small'
-                        : 'large'
-                    : density === 5
-                      ? 'small'
-                      : density === 3
-                        ? 'large'
-                        : 'medium'
-                }
-                className={
-                  mixed ? (index < 4 ? styles.mediumCard : index < 14 ? styles.smallCard : styles.bigCard) : undefined
-                }
+                tag={subjectIndex === 4 ? post.tag : undefined}
+                size={density === 5 ? 'small' : density === 3 ? 'large' : 'medium'}
               />
             ))}
           </div>
           {posts.length === 0 && (
             <p role="status" className={styles.empty}>
-              No matching preview articles. Try another subject or clear your search.
+              No articles in this subject yet.
             </p>
           )}
           <p className={styles.srOnly} aria-live="polite">
-            Showing {posts.length} of {sorted.length} preview articles
+            Showing {posts.length} articles, latest to oldest
           </p>
         </section>
         <RelatedHubs revision />

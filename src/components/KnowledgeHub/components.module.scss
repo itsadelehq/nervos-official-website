@@ -1,8 +1,43 @@
 @use './tokens' as tokens;
 
+.arrowButton {
+  display: inline-flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  color: var(--kbText);
+  font-weight: 500;
+  background: var(--kbSurface);
+  border: 1px solid var(--kbText);
+  border-radius: 100px;
+  transition:
+    color 220ms ease,
+    background-color 220ms ease;
+}
+
+.arrowButtonIcon {
+  display: inline-block;
+  transition: transform 220ms ease;
+}
+
+.arrowButton:is(:hover, :focus-visible) {
+  color: white;
+  background: var(--kbDark);
+}
+
+.arrowButton:is(:hover, :focus-visible) .arrowButtonIcon {
+  transform: translateX(8px);
+}
+
+.arrowButton:focus-visible {
+  outline: 2px solid var(--kbAccent);
+  outline-offset: 3px;
+}
+
 .subject {
   display: flex;
   flex-direction: column;
+  gap: 10px;
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
@@ -10,12 +45,36 @@
   min-height: 116px;
   padding: 8px 16px;
   color: var(--kbText);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0;
   text-align: left;
-  text-transform: uppercase;
+  text-transform: none;
   background: var(--kbSurface);
   border: 0.5px solid var(--kbBorder);
   border-radius: var(--kbRadiusControl);
+  transition: transform 220ms ease;
   @include tokens.type(subheader2);
+}
+
+.subject:is(:hover, :focus-visible) {
+  transform: translateY(-4px);
+}
+
+.subject:focus-visible {
+  outline: 2px solid var(--kbAccent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subject {
+    transition: none;
+  }
+
+  .subject:is(:hover, :focus-visible) {
+    transform: none;
+  }
 }
 
 .tags span {
@@ -23,6 +82,11 @@
   background: var(--kbTagNervos);
   border-radius: 8px;
   @include tokens.type(footnote);
+}
+
+.count > span {
+  display: inline-block;
+  transition: transform 220ms ease;
 }
 
 .subject > span:last-child {
@@ -41,13 +105,6 @@
   color: white;
   background: var(--kbAccent);
   border-color: var(--kbAccent);
-}
-
-.stepSubject {
-  font-size: 16px;
-  line-height: 1.5;
-  text-transform: none;
-  border-color: var(--kbText);
 }
 
 .stepIndex {
@@ -81,21 +138,61 @@
   @include tokens.type(body2);
 }
 
-.readingList a:hover {
-  background: var(--kbBrandSurface);
-}
-
 .readingList small {
   display: flex;
   flex-shrink: 0;
   gap: 8px;
   align-items: center;
   color: var(--kbMuted);
+  transition: opacity 140ms ease;
   @include tokens.type(footnote);
 }
 
 .compactReading small {
   gap: 4px;
+}
+
+.readingTitle {
+  min-width: 0;
+  transition: transform 180ms ease;
+}
+
+.readingAction {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.readingArrow {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  font-size: 20px;
+  line-height: 1;
+  transform: translateY(-50%);
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 140ms ease,
+    visibility 140ms ease;
+}
+
+.readingList a:is(:hover, :focus-visible) .readingTitle {
+  transform: translateX(4px);
+}
+
+.readingList a:is(:hover, :focus-visible) small {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.readingList a:is(:hover, :focus-visible) .readingArrow {
+  visibility: visible;
+  opacity: 1;
+}
+
+.readingList a:focus-visible {
+  outline: 2px solid var(--kbAccent);
+  outline-offset: 2px;
 }
 
 .hubCard {
@@ -115,13 +212,18 @@
   margin-top: 24px;
 }
 
-.hubContent h3 {
-  @include tokens.type(h3);
-}
+@media (prefers-reduced-motion: reduce) {
+  .arrowButton,
+  .arrowButtonIcon,
+  .readingList small,
+  .readingArrow,
+  .readingTitle {
+    transition: none;
+  }
 
-.hubContent > p {
-  margin: 16px 0 24px;
-  @include tokens.type(subheader2);
+  .arrowButton:is(:hover, :focus-visible) .arrowButtonIcon {
+    transform: none;
+  }
 }
 
 .count {
@@ -134,8 +236,26 @@
   @include tokens.type(body2);
 }
 
+.count:is(:hover, :focus-visible) > span {
+  transform: translateX(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .count > span {
+    transition: none;
+  }
+
+  .count:is(:hover, :focus-visible) > span {
+    transform: none;
+  }
+}
+
 .stepSection {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
   padding: 32px 48px;
+  overflow: hidden;
   background: var(--kbSurface);
   border: 1px solid var(--kbBorder);
   border-radius: var(--kbRadiusCard);
@@ -147,6 +267,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
 }
 
 .stepLabel {
@@ -205,7 +326,8 @@
 }
 
 .deeper {
-  margin-top: 32px;
+  width: 100%;
+  margin-top: 0;
 }
 
 .deeper h3 {
@@ -227,10 +349,19 @@
   background: var(--kbSurface);
   border: 1px solid var(--kbBorder);
   border-radius: 16px;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
 }
 
-.articleCard:hover {
+.articleCard:is(:hover, :focus-visible) {
   box-shadow: var(--kbShadow);
+  transform: translateY(-4px);
+}
+
+.articleCard:focus-visible {
+  outline: 2px solid var(--kbAccent);
+  outline-offset: 3px;
 }
 
 .cover {
@@ -314,6 +445,16 @@
   gap: 48px;
   width: min(690px, 100%);
   padding: 24px 0;
+  transition: transform 220ms ease;
+}
+
+.horizontalCard:is(:hover, :focus-visible) {
+  transform: translateX(4px);
+}
+
+.horizontalCard:focus-visible {
+  outline: 2px solid var(--kbAccent);
+  outline-offset: 3px;
 }
 
 .horizontalCard h3 {
@@ -324,6 +465,16 @@
   margin: 8px 0;
   color: var(--kbSecondary);
   @include tokens.type(label);
+}
+
+.hubCard .hubContent h3 {
+  margin: 0 0 16px;
+  @include tokens.type(h3);
+}
+
+.hubCard .hubContent > p {
+  margin: 0 0 24px;
+  @include tokens.type(subheader2);
 }
 
 .horizontalCover {
@@ -398,5 +549,17 @@
 
   .horizontalCover {
     height: 70px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .horizontalCard,
+  .articleCard {
+    transition: none;
+  }
+
+  .horizontalCard:is(:hover, :focus-visible),
+  .articleCard:is(:hover, :focus-visible) {
+    transform: none;
   }
 }

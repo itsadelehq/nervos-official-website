@@ -6,10 +6,20 @@ import { Page } from '../Page'
 import { hubs, previewArticleTitles } from './fixtures'
 import styles from './home-v2.module.scss'
 import { Icon } from './Icon'
-import { HubCard } from './Components'
+import { ArrowButton, HubCard } from './Components'
 import { KnowledgeFooter } from './KnowledgeFooter'
+import { GuideLife } from './GuideLife'
+import { NeuronIcon } from './NeuronIcon'
 
 export { Icon } from './Icon'
+
+function SearchCloseIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+      <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 export function Eyebrow({ icon, children }: { icon: string; children: React.ReactNode }) {
   return (
@@ -39,7 +49,7 @@ export function KnowledgeHubHome() {
             <section className={styles.hero} aria-labelledby="kb-title">
               <div className={styles.heading}>
                 <span className={styles.brain}>
-                  <Icon name="hero-imgLayer12" size={70} />
+                  <NeuronIcon />
                 </span>
                 <h1 id="kb-title">Knowledge Base Hub</h1>
               </div>
@@ -48,6 +58,7 @@ export function KnowledgeHubHome() {
                 topic, or work your way from the fundamentals to advanced concepts.
               </p>
               <div className={styles.guideBanner}>
+                <GuideLife className={styles.guideLife} />
                 <div className={styles.guideContent}>
                   <Eyebrow icon="hero-imgQlementineIconsGamepadStart16">Start here</Eyebrow>
                   <h2>
@@ -98,7 +109,7 @@ export function KnowledgeHubHome() {
                         <input
                           type="search"
                           aria-label="Search preview articles"
-                          placeholder="Search All Articles"
+                          placeholder="Search all articles"
                           value={query}
                           onChange={event => {
                             setQuery(event.target.value)
@@ -108,6 +119,19 @@ export function KnowledgeHubHome() {
                             if (event.key === 'Escape') setShowSearch(false)
                           }}
                         />
+                        {query && (
+                          <button
+                            type="button"
+                            className={styles.clearSearch}
+                            aria-label="Clear search"
+                            onClick={() => {
+                              setQuery('')
+                              setShowSearch(false)
+                            }}
+                          >
+                            <SearchCloseIcon />
+                          </button>
+                        )}
                         <button aria-label="Search">
                           <Icon name="popular-img9026843MagnifyingGlassThinIcon1" />
                         </button>
@@ -117,7 +141,7 @@ export function KnowledgeHubHome() {
                           <div className={styles.searchCaption}>
                             Preview titles only{' '}
                             <button onClick={() => setShowSearch(false)} aria-label="Close search results">
-                              ×
+                              <SearchCloseIcon />
                             </button>
                           </div>
                           {matches.length ? (
@@ -135,9 +159,9 @@ export function KnowledgeHubHome() {
                         </div>
                       )}
                     </div>
-                    <button className={styles.allArticles} onClick={() => void router.push('/kb/topic?view=all')}>
-                      See all articles <span aria-hidden="true">→</span>
-                    </button>
+                    <ArrowButton className={styles.allArticles} href="/kb/topic?view=all">
+                      See all articles
+                    </ArrowButton>
                   </div>
                 </div>
                 <div className={styles.popularGrid}>
@@ -233,7 +257,7 @@ export function Newsletter() {
               </div>
             </a>
             <a className={styles.resourceCard} href="https://talk.nervos.org/">
-              <Icon name="newsletter-imgLayer2" size={60} />
+              <Icon name="newsletter-imgLayer1" size={60} />
               <div>
                 <h3>
                   Join the CKB
@@ -248,7 +272,7 @@ export function Newsletter() {
               </div>
             </a>
             <button className={styles.resourceCard} onClick={() => explainPreview('CKBA membership')}>
-              <Icon name="newsletter-imgLayer2" size={60} />
+              <Icon name="newsletter-imgLayer1" size={60} />
               <div>
                 <h3>
                   Become a CKBA

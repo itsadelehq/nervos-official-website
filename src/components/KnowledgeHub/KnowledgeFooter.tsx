@@ -141,9 +141,12 @@ export function KnowledgeFooter() {
               </a>
             ))}
           </div>
-          <p role="status" className={styles.status}>
-            {status}
-          </p>
+          <span className={styles.socialRule} aria-hidden="true" />
+          {status && (
+            <p role="status" className={styles.status}>
+              {status}
+            </p>
+          )}
         </div>
       </div>
       <div className={styles.bottom}>
