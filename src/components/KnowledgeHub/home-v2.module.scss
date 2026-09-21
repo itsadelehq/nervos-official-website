@@ -1,0 +1,328 @@
+@use './tokens' as tokens;
+@import './index.module';
+
+.page {
+  @include tokens.theme;
+
+  --headerHeight: 80px;
+
+  color: var(--kbText);
+  background: var(--kbSurface);
+
+  h2 {
+    @include tokens.type(h2);
+  }
+
+  input::placeholder {
+    color: var(--kbPlaceholder);
+  }
+}
+
+.eyebrow {
+  gap: 16px;
+  margin-bottom: 8px;
+  text-transform: none;
+  @include tokens.type(subheader2);
+}
+
+.hero {
+  min-height: 687px;
+  padding-top: 48px;
+}
+
+.heading {
+  gap: 24px;
+}
+
+.heading h1 {
+  @include tokens.type(display);
+}
+
+.brain {
+  background: var(--kbDark);
+}
+
+.intro {
+  margin-top: 32px !important;
+  @include tokens.type(subheader);
+}
+
+.guideBanner {
+  min-height: 340px;
+  margin-top: 64px;
+  padding: 32px 48px;
+  background: #111 url('/images/knowledge-hub/guide-background.jpg') center / cover no-repeat;
+  isolation: isolate;
+}
+
+.guideBanner::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 468px;
+  height: 340px;
+  background: url('/images/knowledge-hub/guide-pixels.jpg') top right / 100% 100% no-repeat;
+  mix-blend-mode: lighten;
+  content: '';
+  pointer-events: none;
+}
+@media (width >= 751px) and (width <= 1150px) {
+  .guideBanner::before {
+    opacity: 0.3;
+  }
+}
+
+.guideContent .eyebrow {
+  margin-bottom: 16px;
+}
+
+.guideContent h2 {
+  @include tokens.type(h1);
+}
+
+.guideContent p {
+  max-width: 688px;
+  margin-top: 16px;
+  @include tokens.type(subheader);
+}
+
+.guideButton {
+  width: 336px;
+  height: 56px;
+  margin-top: 32px;
+  font-size: 16px !important;
+  letter-spacing: 0;
+  text-transform: none;
+  background: var(--kbAccent);
+}
+
+.topics {
+  padding: 80px 0;
+}
+
+.topicIntro {
+  max-width: 486px;
+  margin-top: 24px !important;
+  color: var(--kbSecondary);
+  @include tokens.type(subheader);
+}
+
+.hubGrid {
+  gap: 32px;
+  margin-top: 48px;
+}
+
+.popular {
+  padding: 80px 0 81px;
+}
+
+.popularHeader {
+  align-items: center;
+}
+
+.popularHeader .eyebrow {
+  margin-bottom: 8px;
+}
+
+.popularGrid {
+  margin-top: 64px;
+}
+
+.searchActions {
+  gap: 16px;
+}
+
+.searchWrap form {
+  height: 48px;
+  background: var(--kbInput);
+}
+
+.allArticles {
+  min-width: 169px;
+  height: 48px;
+  font-size: 14px !important;
+  letter-spacing: 0;
+  text-transform: none;
+  border-color: var(--kbText);
+}
+
+.searchWrap input {
+  @include tokens.type(body);
+}
+
+.page .searchWrap input:focus,
+.page .searchWrap input:focus-visible,
+.page .newsletterCopy input:focus,
+.page .newsletterCopy input:focus-visible {
+  outline: none;
+}
+
+.popularCard {
+  color: white;
+  background: var(--kbDark);
+}
+
+.popularCard h3 {
+  min-height: 114px;
+  @include tokens.type(h4);
+}
+
+.coverPlaceholder {
+  color: var(--kbMuted);
+  background: var(--kbDivider);
+}
+
+.articleMeta {
+  gap: 8px;
+  color: var(--kbDisabled);
+  font-size: 11px;
+}
+
+.newsletter {
+  background: var(--kbBrandSurface);
+}
+
+.newsletterInner {
+  gap: 48px;
+  min-height: 444px;
+  padding: 80px 0;
+}
+
+.newsletterCopy > p {
+  margin-top: 24px;
+  color: var(--kbSecondary);
+  @include tokens.type(subheader);
+}
+
+.newsletterCopy form {
+  margin-top: 48px;
+  padding-right: 8px;
+  padding-left: 24px;
+}
+
+.newsletterCopy input {
+  @include tokens.type(body);
+}
+
+.newsletterCopy form button {
+  height: 32px;
+  padding: 4px 24px;
+  background: var(--kbAccent);
+  @include tokens.type(body);
+}
+
+.newsletterCopy > small {
+  margin-top: 8px;
+  color: var(--kbMuted);
+  @include tokens.type(footnote);
+}
+
+.resourceGrid {
+  gap: 16px;
+  max-width: 629px;
+}
+
+.resourceCard {
+  color: var(--kbText);
+}
+@media (width >= 751px) {
+  .resourceCard {
+    gap: 32px;
+    justify-content: flex-start;
+  }
+}
+
+.resourceCard:first-child {
+  background: var(--kbDark);
+}
+
+.resourceCard h3 {
+  @include tokens.type(h5);
+}
+
+.resourceCard p {
+  margin-top: 16px;
+  color: var(--kbMuted);
+  @include tokens.type(label);
+}
+
+.resourceCard:first-child p {
+  margin-top: 8px;
+  color: var(--kbDisabled);
+}
+@media (width >= 751px) {
+  .resourceCard h3 {
+    min-height: 2.6em;
+  }
+
+  .resourceCard:first-child p {
+    margin-top: 16px;
+  }
+}
+@media (width <= 1100px) {
+  .heading h1 {
+    font-size: 48px;
+  }
+
+  .newsletterInner {
+    gap: 24px;
+  }
+
+  .newsletterCopy {
+    width: 40%;
+  }
+}
+@media (width <= 950px) {
+  .newsletterCopy {
+    width: 100%;
+  }
+}
+@media (width <= 750px) {
+  .page {
+    --headerHeight: 65px;
+  }
+
+  .hero {
+    min-height: 0;
+    padding-top: 32px;
+  }
+
+  .heading h1 {
+    font-size: 40px;
+  }
+
+  .guideBanner {
+    margin-top: 40px;
+    padding: 32px 24px 56px;
+  }
+
+  .guideBanner::before {
+    top: auto;
+    bottom: 0;
+    width: 234px;
+    height: 170px;
+    opacity: 0.18;
+  }
+
+  .guideContent h2 {
+    font-size: 32px;
+  }
+
+  .topics,
+  .popular {
+    padding: 56px 0;
+  }
+
+  .hubGrid {
+    gap: 24px;
+    margin-top: 32px;
+  }
+
+  .newsletterInner {
+    padding: 56px 0;
+  }
+
+  .newsletterCopy form button {
+    padding: 4px 12px;
+  }
+}

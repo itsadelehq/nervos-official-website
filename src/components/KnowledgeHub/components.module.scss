@@ -1,0 +1,402 @@
+@use './tokens' as tokens;
+
+.subject {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  min-height: 116px;
+  padding: 8px 16px;
+  color: var(--kbText);
+  text-align: left;
+  text-transform: uppercase;
+  background: var(--kbSurface);
+  border: 0.5px solid var(--kbBorder);
+  border-radius: var(--kbRadiusControl);
+  @include tokens.type(subheader2);
+}
+
+.tags span {
+  padding: 4px 8px;
+  background: var(--kbTagNervos);
+  border-radius: 8px;
+  @include tokens.type(footnote);
+}
+
+.subject > span:last-child {
+  max-width: 194px;
+}
+
+.selected img {
+  filter: brightness(0) invert(1);
+}
+
+.subject:not(.selected) img {
+  filter: brightness(0);
+}
+
+.selected {
+  color: white;
+  background: var(--kbAccent);
+  border-color: var(--kbAccent);
+}
+
+.stepSubject {
+  font-size: 16px;
+  line-height: 1.5;
+  text-transform: none;
+  border-color: var(--kbText);
+}
+
+.stepIndex {
+  font-weight: 300;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.readingList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.readingList a {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  color: var(--kbText);
+  background: var(--kbSubtle);
+  border-radius: 3px;
+  @include tokens.type(subheader2);
+}
+
+.compactReading a {
+  padding: 8px;
+  @include tokens.type(body2);
+}
+
+.readingList a:hover {
+  background: var(--kbBrandSurface);
+}
+
+.readingList small {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+  align-items: center;
+  color: var(--kbMuted);
+  @include tokens.type(footnote);
+}
+
+.compactReading small {
+  gap: 4px;
+}
+
+.hubCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 396px;
+  padding: 24px;
+  background: var(--kbSurface);
+  border: 0.5px solid var(--kbBorder);
+  border-radius: var(--kbRadiusCard);
+  box-shadow: var(--kbShadow);
+}
+
+.hubContent {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.hubContent h3 {
+  @include tokens.type(h3);
+}
+
+.hubContent > p {
+  margin: 16px 0 24px;
+  @include tokens.type(subheader2);
+}
+
+.count {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  align-self: flex-end;
+  margin-top: auto;
+  padding-top: 24px;
+  @include tokens.type(body2);
+}
+
+.stepSection {
+  padding: 32px 48px;
+  background: var(--kbSurface);
+  border: 1px solid var(--kbBorder);
+  border-radius: var(--kbRadiusCard);
+  box-shadow: var(--kbShadow);
+  scroll-margin-top: 24px;
+}
+
+.stepTop {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stepLabel {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  text-transform: uppercase;
+  @include tokens.type(h4);
+}
+
+.stepSection > .stepTop h2 {
+  @include tokens.type(h1);
+}
+
+.callout {
+  padding: 16px 24px;
+  color: white;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.3;
+  background: var(--kbDark);
+  border-radius: 8px;
+}
+
+.callout strong {
+  font-weight: 600;
+}
+
+.stepBody {
+  color: var(--kbSecondary);
+  @include tokens.type(body);
+}
+
+.points {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.points li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 40px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--kbDivider);
+  @include tokens.type(body);
+}
+
+.points li:last-child {
+  min-height: 32px;
+  padding-bottom: 0;
+  border: 0;
+}
+
+.deeper {
+  margin-top: 32px;
+}
+
+.deeper h3 {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  @include tokens.type(h5);
+}
+
+.articleCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 312px;
+  overflow: hidden;
+  color: var(--kbText);
+  background: var(--kbSurface);
+  border: 1px solid var(--kbBorder);
+  border-radius: 16px;
+}
+
+.articleCard:hover {
+  box-shadow: var(--kbShadow);
+}
+
+.cover {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  color: var(--kbMuted);
+  font-size: 12px;
+  background: var(--kbDivider);
+  place-items: center;
+  aspect-ratio: 16/9;
+}
+
+.tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 3px 8px;
+  color: var(--kbText);
+  background: var(--kbSurface);
+  border-radius: 60px;
+  @include tokens.type(footnote);
+}
+
+.articleCard h3 {
+  margin: 16px 20px;
+  @include tokens.type(h4);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: var(--kbMuted);
+  @include tokens.type(footnote);
+}
+
+.articleCard > .meta {
+  margin: auto 12px 18px 20px;
+}
+
+.small {
+  height: 249px;
+  border-radius: 13px;
+}
+
+.small h3 {
+  margin: 12px 14px;
+  @include tokens.type(h5);
+}
+
+.small > .meta {
+  gap: 3px;
+  margin: auto 8px 14px 12px;
+  font-size: 9px;
+}
+
+.small > .meta img {
+  width: 12px;
+  height: 12px;
+}
+
+.large {
+  height: 423px;
+}
+
+.large h3 {
+  margin: 22px 27px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.large > .meta {
+  margin: auto 20px 25px 27px;
+}
+
+.horizontalCard {
+  display: grid;
+  grid-template-columns: minmax(0, 400px) 200px;
+  gap: 48px;
+  width: min(690px, 100%);
+  padding: 24px 0;
+}
+
+.horizontalCard h3 {
+  @include tokens.type(h5);
+}
+
+.horizontalCard p {
+  margin: 8px 0;
+  color: var(--kbSecondary);
+  @include tokens.type(label);
+}
+
+.horizontalCover {
+  height: 112px;
+  background: var(--kbDivider);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.tags span:nth-child(2) {
+  background: var(--kbTagBlockchain);
+}
+
+.tags span:nth-child(3) {
+  background: var(--kbTagCrypto);
+}
+
+.tags span:nth-child(4) {
+  background: var(--kbTagPow);
+}
+@media (width <= 750px) {
+  .subject {
+    flex-shrink: 0;
+    width: 190px;
+    scroll-snap-align: start;
+  }
+
+  .stepSection {
+    padding: 24px;
+  }
+
+  .stepSection > .stepTop h2 {
+    font-size: 30px;
+  }
+
+  .points li {
+    align-items: flex-start;
+  }
+
+  .readingList a {
+    padding: 12px;
+  }
+
+  .readingList small {
+    font-size: 10px;
+  }
+
+  .articleCard {
+    height: auto;
+    min-height: 300px;
+  }
+
+  .articleCard h3 {
+    margin: 16px;
+    font-size: 20px;
+  }
+
+  .articleCard > .meta {
+    margin: auto 16px 16px;
+    font-size: 10px;
+  }
+
+  .horizontalCard {
+    grid-template-columns: minmax(0, 1fr) 90px;
+    gap: 16px;
+  }
+
+  .horizontalCover {
+    height: 70px;
+  }
+}

@@ -97,6 +97,25 @@ $defaultHeaderHeight: 90px;
   }
 }
 
+.knowledgeHub {
+  position: relative;
+  flex-direction: row;
+  filter: none;
+  mix-blend-mode: normal;
+
+  .logo {
+    order: 0;
+  }
+
+  .menuPopover {
+    order: 1;
+  }
+
+  .languagePopover {
+    display: none;
+  }
+}
+
 // Because Portal is used, it is no longer a child of header
 .menuPopoverContent {
   position: fixed;
@@ -279,5 +298,15 @@ $defaultHeaderHeight: 90px;
     &.placeholder {
       cursor: unset;
     }
+  }
+}
+
+.menuPopoverContent.rightMenu {
+  right: 76px;
+  left: auto;
+
+  @media (max-width: $mobileBreakPoint) {
+    right: 66px;
+    left: auto;
   }
 }

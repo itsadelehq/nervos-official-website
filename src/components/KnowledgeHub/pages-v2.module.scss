@@ -1,0 +1,289 @@
+@use './tokens' as tokens;
+@import './pages.module';
+
+.page {
+  @include tokens.theme;
+
+  --headerHeight: 80px;
+
+  color: var(--kbText);
+}
+
+.breadcrumb {
+  margin-bottom: 32px;
+  color: var(--kbPlaceholder);
+  text-transform: none;
+  @include tokens.type(label);
+}
+
+.startHero {
+  padding-top: 45px;
+}
+
+.startHero .breadcrumb {
+  margin-bottom: 24px;
+}
+
+.topicHero {
+  padding-top: 48px;
+}
+
+.startHero h1 {
+  @include tokens.type(display);
+}
+
+.topicHero h1 {
+  @include tokens.type(h1);
+}
+
+.startHero > strong {
+  margin-top: 24px;
+  @include tokens.type(h4);
+}
+
+.startHero > p {
+  max-width: 848px;
+  margin-top: 24px;
+  color: var(--kbSecondary);
+  @include tokens.type(subheader);
+}
+
+.topicHero > p {
+  margin-top: 24px;
+  color: var(--kbSecondary);
+  @include tokens.type(subheader);
+}
+
+.stepsLabel {
+  gap: 8px;
+  margin: 48px 0 16px;
+  @include tokens.type(h4);
+}
+
+.stepNav,
+.subjectNav {
+  gap: 16px;
+}
+
+/* SubjectCard owns its selected/step variants; containers only own layout. */
+.stepNav a,
+.subjectNav button {
+  min-height: 116px;
+  padding: 8px 16px;
+  color: inherit;
+  line-height: 1.2;
+  letter-spacing: 0;
+  background: var(--kbSurface);
+  border-color: var(--kbBorder);
+}
+
+.stepNav a {
+  min-width: 227px;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.5;
+  text-transform: none;
+}
+
+.stepNav {
+  grid-template-columns: repeat(5, minmax(227px, 1fr));
+  overflow-x: auto;
+}
+
+.stepNav a > span {
+  font-weight: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.stepNav a > span:first-child {
+  font-weight: 300;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.stepNav [aria-current],
+.subjectNav [aria-pressed='true'] {
+  color: white;
+  background: var(--kbAccent);
+  border-color: var(--kbAccent);
+}
+
+.subjectNav button {
+  font-size: 14px;
+}
+
+.subjectNav button[aria-pressed='true'] img {
+  filter: brightness(0) invert(1);
+}
+
+.guideSteps {
+  position: relative;
+  gap: 24px;
+  margin-top: 48px;
+}
+
+.guideSteps::before {
+  position: absolute;
+  top: -24px;
+  right: 0;
+  left: 0;
+  border-top: 1px solid var(--kbDivider);
+  content: '';
+}
+
+.relatedHubs {
+  margin-bottom: 80px;
+}
+
+.guideSteps + .relatedHubs {
+  margin-top: 48px;
+}
+
+.subjectsLabel {
+  gap: 8px;
+  margin: 48px 0 16px !important;
+  font-weight: 600 !important;
+  font-size: 20px !important;
+  line-height: 25px !important;
+  letter-spacing: 0 !important;
+}
+
+.topicArticles {
+  margin-top: 32px;
+}
+
+.topicToolbar {
+  padding-bottom: 24px;
+  border-color: var(--kbDivider);
+}
+
+.topicToolbar h2 {
+  @include tokens.type(h2);
+}
+
+.topicToolbar p {
+  margin-top: 16px;
+  color: var(--kbSecondary);
+  @include tokens.type(subheader2);
+}
+
+.controls {
+  gap: 8px;
+}
+
+.controls input {
+  height: 6px;
+  background: linear-gradient(to right, var(--kbDisabled) 50%, var(--kbDivider) 50%);
+  border-radius: 46px;
+  appearance: none;
+  accent-color: var(--kbDisabled);
+}
+
+.controls input::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 1px solid var(--kbDisabled);
+  border-radius: 50%;
+  cursor: ew-resize;
+  appearance: none;
+}
+
+.controls input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 1px solid var(--kbDisabled);
+  border-radius: 50%;
+  cursor: ew-resize;
+}
+
+.filterButton {
+  font-size: 14px;
+}
+
+.topicGrid {
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.mixedGrid {
+  column-gap: 0;
+}
+
+.smallCard,
+.bigCard {
+  min-height: 0;
+}
+
+.topicArticles + .relatedHubs {
+  margin-top: 48px;
+}
+
+.label {
+  gap: 16px;
+  margin-bottom: 24px;
+  text-transform: none;
+  @include tokens.type(subheader2);
+}
+
+.pills {
+  gap: 24px;
+}
+
+.pill {
+  min-height: 48px;
+  padding: 12px 24px;
+  color: var(--kbText);
+  font-weight: 500;
+  font-size: 14px !important;
+  line-height: 1.6;
+  letter-spacing: 0;
+  text-transform: none;
+  border-color: var(--kbText);
+}
+@media (width <= 750px) {
+  .page {
+    --headerHeight: 65px;
+  }
+
+  .startHero,
+  .topicHero {
+    padding-top: 32px;
+  }
+
+  .startHero h1 {
+    font-size: 40px;
+  }
+
+  .topicHero h1 {
+    font-size: 36px;
+  }
+
+  .stepNav a,
+  .subjectNav button {
+    width: 190px;
+  }
+
+  .guideSteps {
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .relatedHubs {
+    margin-bottom: 56px;
+  }
+
+  .pills {
+    gap: 12px;
+  }
+
+  .topicGrid {
+    row-gap: 24px;
+  }
+
+  .pill {
+    font-size: 12px !important;
+  }
+}
