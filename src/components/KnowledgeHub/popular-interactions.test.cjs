@@ -12,7 +12,7 @@ test('reader favourites interactions match the requested behavior', () => {
   assert.match(component, /className=\{styles\.clearSearch\}/)
   assert.match(component, /setQuery\(''\)/)
   assert.match(styles, /\.popularCard[\s\S]*?translateY\(-4px\)/)
-  assert.match(component, /<ArrowButton className=\{styles\.allArticles\}/)
+  assert.match(component, /<ArrowButton\s+className=\{styles\.allArticles\}/)
   assert.match(sharedStyles, /\.arrowButton:is\(:hover, :focus-visible\)[\s\S]*?background:\s*var\(--kbDark\)/)
   assert.match(sharedStyles, /\.arrowButton:is\(:hover, :focus-visible\) \.arrowButtonIcon[\s\S]*?translateX\(8px\)/)
   assert.match(styles, /\.clearSearch[\s\S]*?color:\s*var\(--kbMuted\)/)

@@ -57,6 +57,7 @@ export function useHeaderHeight(): number {
 
 const MenuPopover: FC<{ alignRight?: boolean }> = ({ alignRight }) => {
   const [t] = useTranslation('common', { keyPrefix: 'navigation' })
+  const isMobile = useIsMobile()
   return (
     <Popover className={styles.menuPopover}>
       {({ close }) => (
@@ -80,7 +81,17 @@ const MenuPopover: FC<{ alignRight?: boolean }> = ({ alignRight }) => {
               leaveFrom={styles.leaveFrom}
               leaveTo={styles.leaveTo}
             >
-              <Popover.Panel className={clsx(styles.menuPopoverContent, alignRight && styles.rightMenu)}>
+              <Popover.Panel
+                className={clsx(styles.menuPopoverContent, alignRight && styles.rightMenu)}
+                onClick={event => {
+                  if (!alignRight || !isMobile || !(event.target instanceof Element)) return
+                  const link = event.target.closest('a[href]')
+                  const href = link?.getAttribute('href')
+                  if (href?.startsWith('/') && !href.startsWith('//') && link?.getAttribute('target') !== '_blank') {
+                    close()
+                  }
+                }}
+              >
                 <div className={styles.menu}>
                   <StyledLink href="/developers" className={styles.title}>
                     <CodeIcon />

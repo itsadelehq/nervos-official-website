@@ -50,6 +50,7 @@
 }
 
 .groups h2,
+.groups h2 > a,
 .groups li > a,
 .groups li > button {
   display: inline-flex;
@@ -207,34 +208,128 @@
     gap: 20px;
   }
 }
-@media (width <= 750px) {
-  .footer {
-    width: calc(100% - 48px);
-    padding: 48px 0;
-  }
-
+@media (width <= 900px) {
   .top {
     flex-direction: column;
   }
 
+  .socials a {
+    min-height: 44px;
+  }
+
   .groups {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 32px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .groups > div {
+    min-width: 0;
+  }
+
+  .groups h2 {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .groups h2 > a,
+  .groups li > a {
+    min-height: 44px;
+  }
+
+  .groups ul {
+    gap: 0;
+    margin-top: 8px;
+  }
+
+  .groups li {
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: normal;
+  }
+
+  .groups li > a {
+    width: 100%;
   }
 
   .subscribe {
     width: 100%;
   }
 
+  .subscribe > p {
+    max-width: 600px;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .subscribe form {
+    height: 48px;
+    padding: 0 4px 0 16px;
+  }
+
+  .subscribe input {
+    height: 44px;
+    font-size: 16px;
+  }
+
+  .subscribe button {
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+  }
+
+  .socials {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(44px, 1fr));
+    gap: 8px;
+    max-width: 408px;
+    margin-top: 16px;
+  }
+
+  .subscribe .status {
+    position: static;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
   .bottom {
     flex-direction: column;
+    gap: 20px;
     align-items: flex-start;
     margin-top: 40px;
   }
 
   .bottom p {
+    max-width: 100%;
+    line-height: 1.5;
     text-align: left;
+  }
+}
+
+@media (width <= 750px) {
+  .footer {
+    width: calc(100% - 32px);
+    min-height: 0;
+    padding: 40px 0 32px;
+  }
+
+  .top {
+    gap: 40px;
+  }
+
+  .groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 16px;
+  }
+}
+
+@media (width <= 480px) {
+  .socials {
+    grid-template-columns: repeat(4, minmax(44px, 1fr));
+    max-width: 320px;
   }
 }
 

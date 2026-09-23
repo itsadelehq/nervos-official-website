@@ -7,6 +7,7 @@ import { Icon, PreviewNotice } from './Home'
 import { articleHref, ArticleMeta, DiscoverBanner, PreviewPage, useActiveSection } from './Shared'
 import { ArticleCard } from './Components'
 import styles from './article-v2.module.scss'
+import { articleSocialActionsEnabled } from './article-features'
 
 const intro =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
@@ -53,7 +54,7 @@ export function Article() {
     <PreviewPage title={title} newsletter={false} revision headerClassName={styles.scrollingHeader}>
       <div className={styles.articlePage} style={{ '--articleNavHeight': `${navHeight}px` } as CSSProperties}>
         <div className={styles.articleNav} ref={navRef}>
-          <Link href="/kb" className={styles.articleBrand}>
+          <Link href="/knowledge-base" className={styles.articleBrand}>
             <span>
               <Icon name="articleNav-imgGroup" size={28} />
             </span>
@@ -240,40 +241,44 @@ export function Article() {
                 )}
               </div>
             </section>
-            <section className={styles.sharing}>
-              <h2>Share this article:</h2>
-              <div className={styles.socials}>
-                <Image
-                  src="/images/knowledge-hub/articleSidebar-imgFrame442.svg"
-                  width={140}
-                  height={20}
-                  alt=""
-                  unoptimized
-                />
-                {['Twitter', 'LinkedIn', 'Reddit', 'Facebook'].map(name => (
-                  <button
-                    key={name}
-                    aria-label={`Share on ${name}`}
-                    onClick={() =>
-                      setNotice(
-                        'Sharing is a visual preview until the final public article URLs are connected. Nothing has been posted.',
-                      )
-                    }
+            {articleSocialActionsEnabled && (
+              <section className={styles.sharing}>
+                <h2>Share this article:</h2>
+                <div className={styles.socials}>
+                  <Image
+                    src="/images/knowledge-hub/articleSidebar-imgFrame442.svg"
+                    width={140}
+                    height={20}
+                    alt=""
+                    unoptimized
                   />
-                ))}
-              </div>
-            </section>
-            <section className={styles.like}>
-              <h2>Like this post:</h2>
-              <button disabled title="Visual preview only — no live like service">
-                <Icon name="articleSidebar-imgVector" size={12} />
-                LIKE
-              </button>
-              <p>
-                <Icon name="articleSidebar-imgVector1" size={12} />
-                509 like this post
-              </p>
-            </section>
+                  {['Twitter', 'LinkedIn', 'Reddit', 'Facebook'].map(name => (
+                    <button
+                      key={name}
+                      aria-label={`Share on ${name}`}
+                      onClick={() =>
+                        setNotice(
+                          'Sharing is a visual preview until the final public article URLs are connected. Nothing has been posted.',
+                        )
+                      }
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+            {articleSocialActionsEnabled && (
+              <section className={styles.like}>
+                <h2>Like this post:</h2>
+                <button disabled title="Visual preview only — no live like service">
+                  <Icon name="articleSidebar-imgVector" size={12} />
+                  LIKE
+                </button>
+                <p>
+                  <Icon name="articleSidebar-imgVector1" size={12} />
+                  509 like this post
+                </p>
+              </section>
+            )}
           </aside>
         </div>
       </div>

@@ -1,69 +1,96 @@
 import clsx from 'clsx'
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { useRouter } from 'next/router'
 import { Icon } from './Home'
 import { hubs } from './fixtures'
 import { Breadcrumb, PreviewPage, RelatedHubs } from './Shared'
 import styles from './pages-v2.module.scss'
 import { SubjectCard, ArticleCard } from './Components'
+import { ArticleGridControls } from './ArticleGridControls'
 import { useHeroScroll } from './useHeroScroll'
+import { byDate, type KBCatalog } from './content'
+import { trackKBEvent } from './analytics'
 
-const subjects = [
-  {
-    name: 'Scaling Fundamentals',
-    icon: 'imgArrowExpand',
+const subjectPresentation: Record<string, { icon: string; description?: string }> = {
+  'hash-functions': { icon: 'subject-hash-functions' },
+  'digital-signatures-elliptic-curves': { icon: 'subject-digital-signatures' },
+  'cryptographic-primitives': { icon: 'subject-cryptographic-primitives' },
+  'applied-cryptography': { icon: 'subject-applied-cryptography' },
+  'quantum-threat': { icon: 'subject-quantum-threat' },
+  'quantum-resistant-blockchains': { icon: 'subject-quantum-resistant-blockchains' },
+  'post-quantum-cryptography': { icon: 'subject-post-quantum-cryptography' },
+  'crypto-agility-migration': { icon: 'subject-crypto-agility' },
+  'state-models-storage': { icon: 'subject-state-models' },
+  'consensus-finality': { icon: 'subject-consensus-finality' },
+  'pow-network-security': { icon: 'subject-pow-security' },
+  'blockchain-fundamentals': { icon: 'subject-blockchain-fundamentals' },
+  'blockchain-virtual-machines': { icon: 'subject-virtual-machines' },
+  'execution-verification': { icon: 'subject-execution-verification' },
+  'opcodes-precompiles': { icon: 'subject-opcodes' },
+  'risc-v-ckb-vm': { icon: 'subject-risc-v' },
+  'scaling-fundamentals': {
+    icon: 'topicControls-imgArrowExpand',
     description:
       'The core trade-offs. What throughput really means, why the scalability trilemma exists, and the difference between scaling at Layer 1 and scaling at Layer 2.',
   },
-  {
-    name: 'Rollups, Data Availability & Sidechains',
-    icon: 'imgSystemData',
+  'rollups-data-availability-sidechains': {
+    icon: 'topicControls-imgSystemData',
     description: 'Explore rollups, data availability and sidechains.',
   },
-  {
-    name: 'Payment Channels & Networks',
-    icon: 'imgInterfaceCreditCard01',
+  'payment-channels-networks': {
+    icon: 'topicControls-imgInterfaceCreditCard01',
     description: 'Explore payment channels and networks.',
   },
-  { name: 'Bitcoin Scaling & RGB++', icon: 'img1421344023328', description: 'Explore Bitcoin scaling and RGB++.' },
-  { name: 'View all', icon: 'imgGroup60', description: 'Browse all preview articles in this topic.' },
-]
-const titles = [
-  'Layer 1 vs Layer 2',
-  'The Ultimate Guide to Payment Channels',
-  'The Ultimate Guide to RGB, RGB++ and Client-Side Validation',
-]
-const tags = ['Scaling', 'Rollups', 'Payment', 'RGB++']
-const previewPosts = Array.from({ length: 17 }, (_, index) => ({
-  id: index,
-  title: titles[index % 3] ?? titles[0] ?? '',
-  subject: index % 4,
-  tag: index < 4 ? (tags[index] ?? 'Scaling') : 'Scaling',
-  publishedAt: '2023-02-28',
-}))
+  'bitcoin-scaling-rgbpp': {
+    icon: 'topicControls-img1421344023328',
+    description: 'Explore Bitcoin scaling and RGB++.',
+  },
+  'agent-payments-micropayments': { icon: 'subject-agent-payments' },
+  'nervos-ckb-introduction': { icon: 'subject-nervos-introduction' },
+  'ckb-architecture': { icon: 'subject-ckb-architecture' },
+  'ckb-tokenomics-issuance': { icon: 'subject-tokenomics' },
+  'ckb-ecosystem-development': { icon: 'subject-ecosystem-development' },
+}
 
-export function Topic() {
-  const router = useRouter()
-  const requestedHub = typeof router.query.hub === 'string' ? router.query.hub : ''
-  const hub = hubs.find(item => item.name === requestedHub)
-  const all = router.query.view === 'all'
-  const heading = all ? 'All articles' : (hub?.name ?? 'Blockchain Scalability')
-  const [subjectIndex, setSubjectIndex] = useState(0)
+export interface TopicProps {
+  catalog: KBCatalog
+  hubId: string
+  subjectId?: string
+}
+
+export function Topic({ catalog, hubId, subjectId }: TopicProps) {
+  const hub = catalog.hubs.find(item => item.id === hubId)
+  const heading = hub?.heading ?? 'Blockchain Scalability'
+  const subjects = [
+    ...catalog.subjects
+      .filter(item => item.hub === hubId)
+      .sort((a, b) => a.order - b.order)
+      .map(item => ({
+        ...item,
+        icon: subjectPresentation[item.id]?.icon ?? 'topicHero-imgInterfaceBookOpen',
+        description: subjectPresentation[item.id]?.description ?? '',
+      })),
+    {
+      id: 'all',
+      name: 'View all',
+      icon: 'topicControls-imgGroup60',
+      description: 'Browse all articles in this topic.',
+    },
+  ]
+  const [selectedSubject, setSelectedSubject] = useState(
+    subjects.find(item => item.id === subjectId)?.id ?? subjects[0]?.id ?? 'all',
+  )
   const [density, setDensity] = useState(4)
   const { heroFade, breadcrumbHeight, breadcrumbRef } = useHeroScroll()
-  const subject = subjects[subjectIndex] ?? {
+  const subject = subjects.find(item => item.id === selectedSubject) ?? {
+    id: 'all',
     name: 'View all',
-    icon: 'imgGroup60',
-    description: 'Browse all preview articles.',
+    icon: 'topicControls-imgGroup60',
+    description: 'Browse all articles in this topic.',
   }
-  const posts = previewPosts
-    .filter(post => subjectIndex === 0 || subjectIndex === 4 || post.subject === subjectIndex)
-    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
-  const selectSubject = (index: number) => {
-    setSubjectIndex(index)
-  }
+  const posts = catalog.articles
+    .filter(post => post.hub === hubId && (subject.id === 'all' || post.subjects.includes(subject.id)))
+    .sort(byDate)
 
   return (
     <PreviewPage title={heading} revision headerClassName={styles.scrollingHeader}>
@@ -77,11 +104,9 @@ export function Topic() {
         <header className={styles.topicHero}>
           <h1>{heading}</h1>
           <p>
-            {all
-              ? 'Browse the static preview article collection. Article data, topics and search rules will be connected after content cleanup.'
-              : hub && hub.name !== 'Blockchain Scalability'
-                ? hub.description
-                : 'Blockchain scalability is the study of how blockchain networks increase throughput, reduce costs, and support more complex applications. This hub covers Layer 1 and Layer 2 approaches, including rollups, payment channels, Lightning, RGB++, and Fiber, and how Nervos CKB scales without sacrificing security or decentralization.'}
+            {hub && hub.id !== 'blockchain-scalability'
+              ? hubs.find(item => item.name === hub.name)?.description
+              : 'Blockchain scalability is the study of how blockchain networks increase throughput, reduce costs, and support more complex applications. This hub covers Layer 1 and Layer 2 approaches, including rollups, payment channels, Lightning, RGB++, and Fiber, and how Nervos CKB scales without sacrificing security or decentralization.'}
           </p>
         </header>
         <div className={styles.topicRail} style={{ paddingTop: `${48 * (1 - heroFade)}px` }}>
@@ -90,13 +115,21 @@ export function Topic() {
             Subjects
           </h2>
           <nav className={styles.subjectNav} aria-label="Subjects">
-            {subjects.map((item, index) => (
+            {subjects.map(item => (
               <SubjectCard
-                key={item.name}
+                key={item.id}
                 title={item.name}
-                icon={`topicControls-${item.icon}`}
-                selected={subjectIndex === index}
-                onClick={() => selectSubject(index)}
+                icon={item.icon}
+                selected={subject.id === item.id}
+                onClick={() => {
+                  if (selectedSubject !== item.id)
+                    trackKBEvent('kb_subject_select', {
+                      hub_id: hubId,
+                      subject_id: item.id,
+                      placement: 'topic',
+                    })
+                  setSelectedSubject(item.id)
+                }}
               />
             ))}
           </nav>
@@ -105,52 +138,7 @@ export function Topic() {
               <h2 id="subject-title">{subject.name === 'View all' ? 'All subjects' : subject.name}</h2>
               <p>{subject.description}</p>
             </div>
-            <div className={styles.controls}>
-              <button
-                className={styles.gridReset}
-                aria-label="Reset to four cards per row"
-                onClick={() => {
-                  setDensity(4)
-                }}
-              >
-                <span className={styles.gridIcon} aria-hidden="true" />
-              </button>
-              <input
-                aria-label="Cards per row"
-                type="range"
-                min="3"
-                max="5"
-                value={density}
-                style={{ '--rangeProgress': `${((density - 3) / 2) * 100}%` } as CSSProperties}
-                onChange={event => {
-                  setDensity(Number(event.target.value))
-                }}
-              />
-              <Menu as="div" className={styles.filterMenu}>
-                <MenuButton className={styles.filterButton}>
-                  <Icon name="topicBody-imgInterfaceSlider03" size={24} />
-                  Filter
-                </MenuButton>
-                <MenuItems className={styles.filterOptions}>
-                  <MenuItem>
-                    <button className={styles.filterOption} type="button">
-                      Latest to oldest <Icon name="interface-check" size={16} />
-                      <span className={styles.srOnly}> (selected)</span>
-                    </button>
-                  </MenuItem>
-                  <MenuItem disabled>
-                    <button className={styles.filterOption} type="button" disabled>
-                      Most popular
-                    </button>
-                  </MenuItem>
-                  <MenuItem disabled>
-                    <button className={styles.filterOption} type="button" disabled>
-                      Must reads
-                    </button>
-                  </MenuItem>
-                </MenuItems>
-              </Menu>
-            </div>
+            <ArticleGridControls density={density} onDensityChange={setDensity} placement="topic" />
           </div>
         </div>
         <section className={styles.topicArticles} aria-labelledby="subject-title">
@@ -159,7 +147,11 @@ export function Topic() {
               <ArticleCard
                 key={post.id}
                 title={post.title}
-                tag={subjectIndex === 4 ? post.tag : undefined}
+                article={post}
+                analyticsContext={{ placement: 'topic_articles', hub_id: hubId, subject_id: subject.id }}
+                tag={
+                  subject.id === 'all' ? catalog.subjects.find(item => item.id === post.subjects[0])?.name : undefined
+                }
                 size={density === 5 ? 'small' : density === 3 ? 'large' : 'medium'}
               />
             ))}

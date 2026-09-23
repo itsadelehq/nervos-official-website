@@ -2,9 +2,16 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Logo from '../Footer/logo.svg'
+import { trackKBEvent } from './analytics'
 import styles from './footer-v2.module.scss'
 
-const groups = [
+type FooterGroup = {
+  title: string
+  href?: string
+  links: [label: string, href: string][]
+}
+
+const groups: FooterGroup[] = [
   {
     title: 'Discover',
     links: [
@@ -17,6 +24,7 @@ const groups = [
   },
   {
     title: 'Developers',
+    href: '/developers',
     links: [
       ['Documentation', 'https://docs.nervos.org/'],
       ['Github', 'https://github.com/nervosnetwork/'],
@@ -25,16 +33,18 @@ const groups = [
   },
   {
     title: 'Ecosystem',
+    href: 'https://ckbdapps.com/ecosystem',
     links: [
       ['Nervos Foundation', '/foundation'],
       ['Cryptape', 'https://cryptape.com/'],
-      ['Godwoken', ''],
-      ['Nervina Labs', ''],
+      ['Godwoken', 'https://godwoken.com/'],
+      ['Nervina Labs', 'https://nervina.io/'],
       ['Tunnel Vision Labs', 'https://tunnelvisionlabs.xyz/'],
     ],
   },
   {
     title: 'Community',
+    href: '/community',
     links: [
       ['Community Fund DAO', 'https://dao.ckb.community/'],
       ['Nervos Talk Forum', 'https://talk.nervos.org/'],
@@ -43,9 +53,10 @@ const groups = [
   },
   {
     title: 'Learn',
+    href: '/learn',
     links: [
-      ['Knowledge Base', '/kb'],
-      ['Blog', ''],
+      ['Knowledge Base', '/knowledge-base'],
+      ['Blog', 'https://archive.nervos.org/blog'],
       ['Medium', 'https://medium.com/nervosnetwork'],
       ['Youtube', 'https://www.youtube.com/c/NervosNetwork'],
     ],
@@ -61,8 +72,11 @@ const socials = [
   { label: 'Nervos Talk', href: 'https://talk.nervos.org/', icon: 'talk', height: 18 },
 ]
 
-// Match the design markers explicitly; some preview destinations are still internal or pending.
+// Keep the design's arrow markers independent from how each destination opens.
 const unmarkedLinks = new Set(['CKB', 'Mining', 'Wallets', 'Knowledge Base'])
+
+// Only fixed navigation labels are used here; never include destination URLs or form values.
+const footerLinkId = (label: string) => label.toLowerCase().replace(/\s+/g, '_')
 
 function FooterArrow({ kind = 'external' }: { kind?: 'external' | 'chevron' | 'heading-external' }) {
   return (
@@ -86,25 +100,42 @@ export function KnowledgeFooter() {
           {groups.map(group => (
             <div key={group.title}>
               <h2>
-                {group.title}
-                {group.title !== 'Discover' && (
-                  <FooterArrow kind={group.title === 'Ecosystem' ? 'heading-external' : 'chevron'} />
+                {group.href ? (
+                  <Link
+                    href={group.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() =>
+                      trackKBEvent('kb_footer_link_click', {
+                        group: footerLinkId(group.title),
+                        link_id: `${footerLinkId(group.title)}_heading`,
+                      })
+                    }
+                  >
+                    {group.title}
+                    <FooterArrow kind={group.title === 'Ecosystem' ? 'heading-external' : 'chevron'} />
+                  </Link>
+                ) : (
+                  group.title
                 )}
               </h2>
               <ul>
                 {group.links.map(([label, href]) => (
                   <li key={label}>
-                    {href ? (
-                      <Link href={href}>
-                        {label}
-                        {!unmarkedLinks.has(label ?? '') && <FooterArrow />}
-                      </Link>
-                    ) : (
-                      <button onClick={() => setStatus(`${label ?? 'This link'} is awaiting its final destination.`)}>
-                        {label}
-                        {!unmarkedLinks.has(label ?? '') && <FooterArrow />}
-                      </button>
-                    )}
+                    <Link
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        trackKBEvent('kb_footer_link_click', {
+                          group: footerLinkId(group.title),
+                          link_id: footerLinkId(label),
+                        })
+                      }
+                    >
+                      {label}
+                      {!unmarkedLinks.has(label) && <FooterArrow />}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -120,6 +151,7 @@ export function KnowledgeFooter() {
           <form
             onSubmit={event => {
               event.preventDefault()
+              trackKBEvent('kb_newsletter_submit_preview', { placement: 'footer' })
               setStatus('Static preview only. Your email was not sent or stored.')
             }}
           >
@@ -130,7 +162,14 @@ export function KnowledgeFooter() {
           </form>
           <div className={styles.socials}>
             {socials.map(({ label, href, icon, height }) => (
-              <a key={label} href={href} aria-label={label}>
+              <a
+                key={label}
+                href={href}
+                aria-label={label}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackKBEvent('kb_social_click', { network: icon, placement: 'footer' })}
+              >
                 <Image
                   src={`/images/knowledge-hub/footer-${icon}.svg`}
                   width={icon === 'talk' ? 18 : 20}

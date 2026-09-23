@@ -32,16 +32,25 @@ test('start page keeps its navigation rails sticky and lifts step cards', () => 
   assert.match(componentStyles, /\.subject:is\(:hover, :focus-visible\)[\s\S]*?translateY\(-4px\)/)
 })
 
-test('sticky breadcrumb reaches the viewport top and the steps rail follows its measured height', () => {
+test('desktop sticky breadcrumb and rail keep their existing measured offsets', () => {
   assert.match(pageStyles, /\.breadcrumbDock\s*\{[\s\S]*?top:\s*0/)
   assert.match(pageStyles, /\.stepsRail\s*\{[\s\S]*?top:\s*var\(--breadcrumbHeight, 55px\)/)
-  assert.doesNotMatch(pageStyles, /@media \(width <= 750px\)[\s\S]*?\.breadcrumbDock\s*\{[\s\S]*?padding-top:/)
+  assert.doesNotMatch(pageStyles, /\.breadcrumbDock\s*\{[^}]*padding-top:\s*(?:[2-9]\d|\d{3,})px/)
+})
+
+test('mobile steps use the measured rail for anchor offsets and keep the selected step visible', () => {
+  assert.match(pageStyles, /\.breadcrumbDock\s*\{\s*position:\s*static/)
+  assert.match(pageStyles, /\.stepsRail\s*\{\s*top:\s*0/)
+  assert.match(pageStyles, /scroll-margin-top:\s*calc\(var\(--stepsRailHeight, 152px\) \+ 16px\)/)
+  assert.match(page, /--stepsRailHeight/)
+  assert.match(page, /nav\.scrollTo/)
+  assert.match(shared, /getComputedStyle\(node\)\.scrollMarginTop/)
 })
 
 test('related hubs and all-articles use the shared arrow button interaction', () => {
   assert.match(components, /export function ArrowButton/)
-  assert.match(shared, /<ArrowButton className=\{design\.pill\}/)
-  assert.match(home, /<ArrowButton className=\{styles\.allArticles\}/)
+  assert.match(shared, /<ArrowButton\s+className=\{design\.pill\}/)
+  assert.match(home, /<ArrowButton\s+className=\{styles\.allArticles\}/)
   assert.match(
     componentStyles,
     /\.arrowButton:is\(:hover, :focus-visible\)[\s\S]*?background:\s*var\(--kbDark\)[\s\S]*?color:\s*white/,

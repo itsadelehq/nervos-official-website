@@ -114,6 +114,20 @@ $defaultHeaderHeight: 90px;
   .languagePopover {
     display: none;
   }
+
+  @media (max-width: $mobileBreakPoint) {
+    .menuPopover .trigger {
+      justify-content: center;
+      min-width: 44px;
+      max-width: none;
+      min-height: 44px;
+    }
+
+    .menuPopover .trigger:focus-visible {
+      outline: 2px solid #8b7cff;
+      outline-offset: 2px;
+    }
+  }
 }
 
 // Because Portal is used, it is no longer a child of header
@@ -308,7 +322,39 @@ $defaultHeaderHeight: 90px;
   left: auto;
 
   @media (max-width: $mobileBreakPoint) {
-    right: 66px;
+    top: calc(var(--headerHeight, 65px) + 8px);
+    right: 16px;
     left: auto;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+    width: min(400px, calc(100% - 32px));
+    max-width: none;
+    max-height: calc(100dvh - var(--headerHeight, 65px) - 24px - env(safe-area-inset-bottom, 0px));
+    padding: 12px;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+
+    .menu {
+      height: auto;
+      padding: 0 12px;
+
+      .title {
+        height: auto;
+        min-height: 44px;
+        padding: 8px 0;
+      }
+
+      .links {
+        gap: 0;
+        justify-content: flex-start;
+        padding-bottom: 8px;
+
+        .link {
+          min-height: 44px;
+          padding: 8px 0;
+          overflow-wrap: anywhere;
+        }
+      }
+    }
   }
 }

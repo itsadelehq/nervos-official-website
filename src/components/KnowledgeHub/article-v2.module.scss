@@ -426,29 +426,39 @@
     padding: 24px 24px 24px 78px;
   }
 }
-@media (width <= 760px) {
+
+/* Stack the article before the sidebar starts squeezing the reading column. */
+@media (width <= 900px) {
   .articleNav {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
-    width: calc(100% - 40px);
+    width: min(690px, calc(100% - 40px));
     margin-top: 24px;
+    padding: 12px 0;
   }
 
   .mobileContents {
-    display: flex;
-    gap: 12px;
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
     align-items: center;
     width: 100%;
+    min-width: 0;
     color: var(--kbMuted);
     @include tokens.type(body2);
   }
 
   .mobileContents select {
-    flex: 1;
+    width: 100%;
     min-width: 0;
+    min-height: 44px;
     padding: 8px 12px;
     color: var(--kbText);
     font: inherit;
+    font-size: 16px;
+    text-overflow: ellipsis;
     background: var(--kbInput);
     border: 1px solid var(--kbBorder);
     border-radius: 6px;
@@ -464,7 +474,12 @@
   }
 
   .articleBrand {
+    min-width: 0;
     font-size: 14px;
+  }
+
+  .articleBrand > span {
+    flex-shrink: 0;
   }
 
   .articleBrand strong {
@@ -472,24 +487,64 @@
   }
 
   .writeArticle {
+    min-height: 44px;
     font-size: 11px;
+    white-space: nowrap;
   }
 
   .articleLayout {
+    display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 48px;
-    width: calc(100% - 40px);
-    margin-top: 40px;
-    margin-bottom: 96px;
+    width: min(690px, calc(100% - 40px));
+    margin: 32px auto 64px;
+  }
+
+  .articleBody {
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+
+  .articleBody > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .articlePage .articleBody [id] {
+    scroll-margin-top: calc(var(--articleNavHeight) + 24px);
   }
 
   .articleBody h1 {
-    font-size: 24px;
+    font-size: 28px;
+    line-height: 1.25;
+  }
+
+  .articleBody .subhead {
+    line-height: 1.6;
   }
 
   .articleMeta > div {
-    gap: 5px;
-    font-size: 11px;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .articleMeta span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .articleBody .moreArticles {
+    margin-top: 40px;
+    padding-top: 32px;
+  }
+
+  .moreArticles > a {
+    grid-template-columns: minmax(0, 1fr) 160px;
+    gap: 24px;
+    width: 100%;
   }
 
   .articleBody .discoverBanner {
@@ -503,7 +558,9 @@
   }
 
   .articleBody .discoverBanner h2 {
-    padding-left: 40px;
+    padding-left: 0;
+    font-size: 24px;
+    line-height: 1.25;
   }
 
   .discoverLife {
@@ -515,20 +572,117 @@
     min-width: 0;
   }
 
+  .moreArticles > a > div {
+    min-width: 0;
+  }
+
   .discoverBanner .discoverAction {
     align-self: flex-start;
   }
 
+  .discoverBanner .discoverButton,
+  .discoverCompact .discoverButton {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
   .sidebar {
-    display: flex;
+    display: grid;
+    grid-template-rows: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+    min-width: 0;
     max-width: 100%;
   }
 
+  .sidebar > * {
+    min-width: 0;
+  }
+
   .discoverCompact {
-    min-height: 289px;
+    min-height: 0;
+    padding: 32px 24px;
+  }
+
+  .sidebar > .discoverCompact {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+  }
+
+  .sidebar .discoverCompact h2,
+  .discoverCompact p,
+  .discoverBanner p {
+    max-width: 100%;
+  }
+
+  .recentPosts {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .recentPosts a {
+    padding: 4px 0;
+    overflow-wrap: anywhere;
+  }
+
+  .categories button {
+    max-width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    text-align: left;
+    overflow-wrap: anywhere;
   }
 
   .backToTop {
     right: 20px;
+  }
+}
+
+@media (width <= 600px) {
+  .sidebar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .moreArticles > a {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .moreArticles > a > div:first-child {
+    grid-row: 2;
+  }
+
+  .moreArticles > a > div:last-child {
+    grid-row: 1;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  .moreArticles > a h3 {
+    font-size: 18px;
+    line-height: 1.4;
+  }
+
+  .moreArticles > a p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .backToTop {
+    right: 16px;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (width <= 480px) {
+  .articleBrand strong {
+    font-size: 16px;
+  }
+
+  .writeArticle img {
+    display: none !important;
   }
 }

@@ -1,4 +1,9 @@
-# Knowledge Hub static preview
+# Knowledge Hub static preview (historical)
+
+> This document records the original static design review. Its `/kb` URLs are
+> retired: the current implementation uses `/knowledge-base` and the existing
+> article URLs. Static article/style-guide and duplicate article preview routes
+> have been removed. See `kb-data-integration.md` for current behavior.
 
 Branch: `feat/knowledge-base-redesign`, based on updated `origin/main` (upstream has no master branch).
 

@@ -386,7 +386,7 @@
   @include tokens.type(footnote);
 }
 
-.articleCard h3 {
+.articleCard .cardTitle {
   margin: 16px 20px;
   @include tokens.type(h4);
 }
@@ -404,12 +404,24 @@
   margin: auto 12px 18px 20px;
 }
 
+.populated .cardTitle {
+  display: -webkit-box;
+  min-height: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.populated > .meta {
+  flex-shrink: 0;
+}
+
 .small {
   height: 249px;
   border-radius: 13px;
 }
 
-.small h3 {
+.small .cardTitle {
   margin: 12px 14px;
   @include tokens.type(h5);
 }
@@ -429,7 +441,7 @@
   height: 423px;
 }
 
-.large h3 {
+.large .cardTitle {
   margin: 22px 27px;
   font-size: 28px;
   line-height: 1.2;
@@ -500,6 +512,26 @@
 .tags span:nth-child(4) {
   background: var(--kbTagPow);
 }
+@media (750px < width <= 1024px) {
+  .articleCard {
+    height: auto;
+    min-height: 0;
+  }
+
+  .articleCard .cardTitle {
+    margin: 20px;
+    font-size: 20px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .articleCard > .meta {
+    gap: 6px;
+    margin: auto 20px 20px;
+    font-size: 12px;
+  }
+}
+
 @media (width <= 750px) {
   .subject {
     flex-shrink: 0;
@@ -532,7 +564,7 @@
     min-height: 300px;
   }
 
-  .articleCard h3 {
+  .articleCard .cardTitle {
     margin: 16px;
     font-size: 20px;
   }
@@ -561,5 +593,123 @@
   .horizontalCard:is(:hover, :focus-visible),
   .articleCard:is(:hover, :focus-visible) {
     transform: none;
+  }
+}
+
+@media (width <= 750px) {
+  .hubCard {
+    min-width: 0;
+    min-height: 0;
+    padding: 24px 20px;
+  }
+
+  .horizontalCard h3 {
+    font-size: 18px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .horizontalCard p {
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .hubCard .hubContent h3 {
+    font-size: 24px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .hubCard .hubContent > p {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .readingList a {
+    min-height: 48px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .readingTitle {
+    overflow-wrap: anywhere;
+  }
+
+  .readingList small {
+    font-size: 11px;
+  }
+
+  .count {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .stepSection {
+    gap: 24px;
+    padding: 24px 20px;
+  }
+
+  .stepSection > .stepTop h2 {
+    font-size: 28px;
+    line-height: 1.25;
+  }
+
+  .stepBody,
+  .points li {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .callout {
+    padding: 16px;
+    line-height: 1.5;
+  }
+
+  .articleCard {
+    height: auto;
+    min-height: 0;
+  }
+
+  .articleCard .cardTitle {
+    margin: 20px;
+    font-size: 20px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .articleCard > .meta {
+    gap: 6px;
+    margin: auto 20px 20px;
+    font-size: 12px;
+  }
+
+  .tag {
+    max-width: calc(100% - 24px);
+    white-space: normal;
+  }
+
+  .horizontalCard {
+    grid-template-columns: minmax(0, 1fr) 88px;
+    gap: 16px;
+    width: 100%;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--kbDivider);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .readingList a:hover .readingTitle {
+    transform: none;
+  }
+
+  .readingList a:hover small {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .readingList a:hover .readingArrow {
+    visibility: hidden;
+    opacity: 0;
   }
 }

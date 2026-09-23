@@ -1,15 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { Page } from '../Page'
-import { hubs, previewArticleTitles } from './fixtures'
+import { hubs } from './fixtures'
+import { KBArticle, KBCatalog, featuredArticles, articlePath } from './content'
 import styles from './home-v2.module.scss'
 import { Icon } from './Icon'
 import { ArrowButton, HubCard } from './Components'
 import { KnowledgeFooter } from './KnowledgeFooter'
 import { GuideLife } from './GuideLife'
 import { NeuronIcon } from './NeuronIcon'
+import { searchLengthBucket, trackKBEvent } from './analytics'
 
 export { Icon } from './Icon'
 
@@ -30,17 +33,51 @@ export function Eyebrow({ icon, children }: { icon: string; children: React.Reac
   )
 }
 
-export function KnowledgeHubHome() {
+export function KnowledgeHubHome({ catalog, counts }: { catalog: KBCatalog; counts: Record<string, number> }) {
   const router = useRouter()
+  const canonicalPath = `${router.locale && router.locale !== 'en' ? `/${router.locale}` : ''}/knowledge-base`
   const [query, setQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
-  const matches = previewArticleTitles.filter(title => title.toLowerCase().includes(query.trim().toLowerCase()))
+  const [matches, setMatches] = useState<KBArticle[]>([])
+  const [searchStatus, setSearchStatus] = useState('')
+  useEffect(() => {
+    const controller = new AbortController()
+    setMatches([])
+    if (!query.trim()) {
+      setSearchStatus('Type to search articles.')
+      return
+    }
+    setSearchStatus('Searching…')
+    const timer = setTimeout(() => {
+      void fetch(`/api/kb-search?q=${encodeURIComponent(query)}&locale=${router.locale ?? 'en'}`, {
+        signal: controller.signal,
+      })
+        .then(async response => {
+          if (!response.ok) throw new Error('Search unavailable')
+          return response.json() as Promise<KBArticle[]>
+        })
+        .then(items => {
+          setMatches(items)
+          setSearchStatus(items.length ? '' : 'No matching articles.')
+        })
+        .catch(() => {
+          if (!controller.signal.aborted) setSearchStatus('Search unavailable. Please try again.')
+        })
+    }, 200)
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [query, router.locale])
+  const recommendations = [
+    ...new Map(catalog.hubs.flatMap(h => featuredArticles(catalog, h.id).slice(0, 1)).map(a => [a.id, a])).values(),
+  ].slice(0, 4)
 
   return (
     <>
       <Head>
-        <title>Knowledge Base Hub — Design preview</title>
-        <meta name="robots" content="noindex, nofollow" />
+        <title>Knowledge Base | Nervos Network</title>
+        <link rel="canonical" href={`https://www.nervos.org${canonicalPath}`} />
       </Head>
       <Page className={styles.page}>
         {({ renderHeader }) => (
@@ -69,7 +106,13 @@ export function KnowledgeHubHome() {
                     This guide is the be-all and end-all resource for the underlying architecture and value proposition
                     of the Nervos Network. Start here, then go as deep as you like.
                   </p>
-                  <button className={styles.guideButton} onClick={() => void router.push('/kb/start-here')}>
+                  <button
+                    className={styles.guideButton}
+                    onClick={() => {
+                      trackKBEvent('kb_cta_click', { cta_id: 'start_here', placement: 'home_hero' })
+                      void router.push('/knowledge-base/start-here')
+                    }}
+                  >
                     Take the guide <span aria-hidden="true">→</span>
                   </button>
                 </div>
@@ -84,9 +127,21 @@ export function KnowledgeHubHome() {
                   understanding at your own pace.
                 </p>
                 <div className={styles.hubGrid}>
-                  {hubs.map((hub, index) => (
-                    <HubCard key={hub.name} {...hub} index={index} titles={previewArticleTitles} />
-                  ))}
+                  {catalog.hubs.map((hub, index) => {
+                    const articles = featuredArticles(catalog, hub.id)
+                    return (
+                      <HubCard
+                        key={hub.id}
+                        name={hub.name}
+                        description={hubs[index]?.description ?? ''}
+                        index={index}
+                        hubId={hub.id}
+                        titles={articles.map(a => a.title)}
+                        articles={articles}
+                        count={counts[hub.id] ?? 0}
+                      />
+                    )
+                  })}
                 </div>
               </div>
             </section>
@@ -95,7 +150,7 @@ export function KnowledgeHubHome() {
                 <div className={styles.popularHeader}>
                   <div>
                     <Eyebrow icon="popular-imgIconamoonStarThin">Reader favourites</Eyebrow>
-                    <h2 id="popular-title">Most read this year</h2>
+                    <h2 id="popular-title">Recommended reading</h2>
                   </div>
                   <div className={styles.searchActions}>
                     <div className={styles.searchWrap}>
@@ -103,12 +158,16 @@ export function KnowledgeHubHome() {
                         role="search"
                         onSubmit={event => {
                           event.preventDefault()
-                          setShowSearch(true)
+                          trackKBEvent('kb_search_submit', {
+                            placement: 'home_search',
+                            query_length_bucket: searchLengthBucket(query),
+                          })
+                          void router.push(`/knowledge-base/search?q=${encodeURIComponent(query)}`)
                         }}
                       >
                         <input
                           type="search"
-                          aria-label="Search preview articles"
+                          aria-label="Search articles"
                           placeholder="Search all articles"
                           value={query}
                           onChange={event => {
@@ -139,48 +198,97 @@ export function KnowledgeHubHome() {
                       {showSearch && (
                         <div className={styles.searchResults}>
                           <div className={styles.searchCaption}>
-                            Preview titles only{' '}
+                            Search results{' '}
                             <button onClick={() => setShowSearch(false)} aria-label="Close search results">
                               <SearchCloseIcon />
                             </button>
                           </div>
                           {matches.length ? (
-                            matches.map(title => (
-                              <button
-                                key={title}
-                                onClick={() => void router.push(`/kb/article?title=${encodeURIComponent(title)}`)}
+                            matches.map(article => (
+                              <Link
+                                key={article.id}
+                                href={articlePath(article)}
+                                onClick={() =>
+                                  trackKBEvent('kb_article_click', {
+                                    article_id: article.id,
+                                    placement: 'home_search_suggestion',
+                                  })
+                                }
                               >
-                                {title}
-                              </button>
+                                {article.title}
+                              </Link>
                             ))
                           ) : (
-                            <p role="status">No matching preview articles.</p>
+                            <p role="status">{searchStatus}</p>
                           )}
+                          <Link
+                            href={`/knowledge-base/search?q=${encodeURIComponent(query)}`}
+                            onClick={() =>
+                              trackKBEvent('kb_search_submit', {
+                                placement: 'home_all_search_results',
+                                query_length_bucket: searchLengthBucket(query),
+                              })
+                            }
+                          >
+                            View all results →
+                          </Link>
                         </div>
                       )}
                     </div>
-                    <ArrowButton className={styles.allArticles} href="/kb/topic?view=all">
+                    <ArrowButton
+                      className={styles.allArticles}
+                      href="/knowledge-base/articles"
+                      onClick={() =>
+                        trackKBEvent('kb_cta_click', { cta_id: 'all_articles', placement: 'home_recommended' })
+                      }
+                    >
                       See all articles
                     </ArrowButton>
                   </div>
                 </div>
                 <div className={styles.popularGrid}>
-                  {[0, 1, 2, 3].map(index => (
-                    <button className={styles.popularCard} key={index} onClick={() => void router.push('/kb/article')}>
-                      <div className={styles.coverPlaceholder} aria-label="Article cover placeholder">
-                        <span>Cover image</span>
+                  {recommendations.map(article => (
+                    <Link
+                      className={styles.popularCard}
+                      key={article.id}
+                      href={articlePath(article)}
+                      onClick={() =>
+                        trackKBEvent('kb_article_click', { article_id: article.id, placement: 'recommended_reading' })
+                      }
+                    >
+                      <div
+                        className={styles.coverPlaceholder}
+                        style={
+                          article.coverImage
+                            ? {
+                                backgroundImage: `url(${JSON.stringify(article.coverImage)})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                              }
+                            : undefined
+                        }
+                        aria-label={article.coverImage ? 'Article cover' : 'Article cover placeholder'}
+                      >
+                        {!article.coverImage && <span>Cover image</span>}
                       </div>
-                      <h3>
-                        What is Nervos?
-                        <br />A complete guide for newbies.
-                      </h3>
+                      <h3>{article.title}</h3>
                       <div className={styles.articleMeta}>
                         <Icon name="popular-imgGroup58" size={18} />
-                        <span>February 28, 2023 ·</span>
+                        <span>
+                          {article.date
+                            ? new Date(article.date).toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric',
+                                timeZone: 'UTC',
+                              })
+                            : 'Date not supplied'}{' '}
+                          ·
+                        </span>
                         <Icon name="popular-imgLayer15" size={12} />
-                        <span>5 min read</span>
+                        <span>{article.readingMinutes} min read</span>
                       </div>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -211,7 +319,6 @@ export function PreviewNotice({ notice, onClose }: { notice: string; onClose: ()
 
 export function Newsletter() {
   const [notice, setNotice] = useState('')
-  const explainPreview = (feature: string) => setNotice(`${feature} is not connected in this static preview.`)
   return (
     <>
       <section className={styles.newsletter} aria-labelledby="newsletter-title">
@@ -226,6 +333,7 @@ export function Newsletter() {
             <form
               onSubmit={event => {
                 event.preventDefault()
+                trackKBEvent('kb_newsletter_submit_preview', { placement: 'signal' })
                 setNotice(
                   'This is a design preview. Your email has not been sent or stored, and no subscription has been created.',
                 )
@@ -245,7 +353,15 @@ export function Newsletter() {
             <small>Monthly. Unsubscribe anytime.</small>
           </div>
           <div className={styles.resourceGrid}>
-            <a className={styles.resourceCard} href="https://docs.nervos.org/">
+            <a
+              className={styles.resourceCard}
+              href="https://docs.nervos.org/"
+              onClick={() =>
+                trackKBEvent('kb_resource_click', { resource_id: 'developer_docs', placement: 'signal_resources' })
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Icon name="newsletter-imgLayer1" size={60} />
               <div>
                 <h3>Build on CKB</h3>
@@ -256,7 +372,15 @@ export function Newsletter() {
                 </p>
               </div>
             </a>
-            <a className={styles.resourceCard} href="https://talk.nervos.org/">
+            <a
+              className={styles.resourceCard}
+              href="https://talk.nervos.org/"
+              onClick={() =>
+                trackKBEvent('kb_resource_click', { resource_id: 'community', placement: 'signal_resources' })
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Icon name="newsletter-imgLayer1" size={60} />
               <div>
                 <h3>
@@ -271,7 +395,15 @@ export function Newsletter() {
                 </p>
               </div>
             </a>
-            <button className={styles.resourceCard} onClick={() => explainPreview('CKBA membership')}>
+            <a
+              className={styles.resourceCard}
+              href="https://www.ckba.build/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() =>
+                trackKBEvent('kb_resource_click', { resource_id: 'ckba_membership', placement: 'signal_resources' })
+              }
+            >
               <Icon name="newsletter-imgLayer1" size={60} />
               <div>
                 <h3>
@@ -281,7 +413,7 @@ export function Newsletter() {
                 </h3>
                 <p>Explore Membership →</p>
               </div>
-            </button>
+            </a>
           </div>
         </div>
       </section>
