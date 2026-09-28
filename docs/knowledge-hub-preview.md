@@ -48,7 +48,7 @@ Next.js Pages router, React, existing Articulat CF and SCSS modules remain in us
 
 - Home: Display 56px, H1 40px, H2 32px; 396px Hub cards with 32px grid gaps; purple-tinted neutrals; updated CTA and footer.
 - Topic: 40px heading; 116px shared Subject cards; 4/5/5/3 mixed card rows with 16px gaps. Card sizes are 288×312, approximately 227×249 and 389×423.
-- Start Here: shared step navigation and five Step Sections, dividing line, updated type/spacing and related Hub links.
+- Start Here: shared step navigation and four Step Sections, dividing line, updated type/spacing and related Hub links. The fifth "Try it & build" step was removed at the user's request.
 - Removed the old bottom Back/Keep reading controls from Topic and Start Here because they are absent in the updated screens.
 
 ## Preview assumptions and limitations
@@ -58,9 +58,9 @@ Next.js Pages router, React, existing Articulat CF and SCSS modules remain in us
 - Clicking article titles opens the updated static Article preview, not a real article body.
 - Other Hub headings/descriptions reuse Scalability subject/article examples. Subject filtering, search and density controls remain local demonstration behavior, not approved production rules.
 - Topic has 17 fixtures; the slider shows uniform 3–5 columns and the grid icon restores the Figma mixed layout.
-- Go deeper uses the repeated titles in Figma. Step 5 destinations and meaningful article associations await real content integration.
+- Go deeper now uses Stefan's eight approved articles across the four remaining steps; see [data integration](./kb-data-integration.md).
 - Figma's first Hub instance repeats the Quantum description; the implementation retains the Cryptography description from its base component.
-- New newsletter/footer forms validate locally and report preview-only feedback. They transmit/store nothing. Godwoken, Nervina Labs and Blog footer destinations show pending-destination feedback instead of invented URLs.
+- The two KB newsletter forms now use the existing SendGrid signup and shared list; see [newsletter integration](./kb-newsletter-integration.md). Initial layouts are unchanged, with validation, pending, accepted-request and error feedback. The original preview-only behavior described here is retired.
 - Article uses the new footer, 690px body / 306px sidebar, updated typography, purple token diagram, directory active marker, two Discover CTAs and shared related-article cards. Like remains disabled with an explicit sample-count note; sharing/categories provide preview-only feedback.
 - Mobile layout is responsive implementation judgment; no mobile Figma frames were supplied.
 - Articulat Light/Thin are not in the repository's font assets; step-number Light falls back to the closest available font weight. No unlicensed font files were fetched.

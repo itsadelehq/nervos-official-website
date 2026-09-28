@@ -8,13 +8,12 @@ import styles from './pages-v2.module.scss'
 import type { KBCatalog } from './content'
 import { trackKBEvent } from './analytics'
 
-// Initial editorial proposals; exact source IDs, never fuzzy title matches.
+// Approved editorial selections in order; preserve existing source IDs and URLs.
 const readingIds = [
-  ['nervos_overview_of_a_layered_blockchain', 'ckb_blockchain_developers_dream'],
-  ['what_is_riscv', 'account_abstraction_where_we_are_going'],
-  ['bitcoin_and_ckb_security_models', 'ultimate_guide_to_rgb_rgbpp_and_client_side_validation', 'what_is_fiber'],
-  ['quantum_resistance', 'comparison_of_post_quantum_cryptographic_algorithms'],
-  ['pi400_ckb_node_setup_guide', 'ckb_blockchain_developers_dream'],
+  ['nervos_overview_of_a_layered_blockchain', 'tokenomics_of_nervos_network'],
+  ['comparing_blockchain_virtual_machines', 'account_abstraction_where_we_are_going'],
+  ['what_is_fiber', 'the-case-for-rgbpp'],
+  ['blockchain_crypto_agility', 'ckb_blockchain_developers_dream'],
 ]
 
 export function StartHere({ catalog }: { catalog: KBCatalog }) {
@@ -62,7 +61,10 @@ export function StartHere({ catalog }: { catalog: KBCatalog }) {
         </div>
         <header className={styles.startHero}>
           <div className={styles.startHeroCopy}>
-            <h1>Understand Nervos CKB in five steps.</h1>
+            <h1>
+              Understand Nervos
+              <br className={styles.startTitleBreak} /> CKB in four steps.
+            </h1>
             <strong>Inspired by Bitcoin’s foundations. Built for what comes next.</strong>
             <p>
               Nervos CKB explores what becomes possible when Bitcoin’s design principles meet open-ended

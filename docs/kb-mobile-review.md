@@ -36,8 +36,9 @@ and canonical article paths are unchanged.
   wide article content.
 - Checked search suggestions and list/grid switching, Subject selection,
   Filter menu, next-page navigation, mobile menu bottom links and footer.
-- Step 5 anchor lands below the measured sticky rail and is highlighted;
-  article contents selection lands below its sticky navigation.
+- Step navigation uses measured sticky-rail offsets; the guide now ends at
+  Step 4 after the requested removal of "Try it & build". Article contents
+  selection lands below its sticky navigation.
 - Desktop article keeps its 690px + 306px columns, 14px body and desktop TOC.
 - TypeScript, stylesheet lint, component tests and content/URL validation run
   independently of viewport inspection.

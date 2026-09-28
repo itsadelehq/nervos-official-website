@@ -73,7 +73,7 @@ export function Topic({ catalog, hubId, subjectId }: TopicProps) {
     {
       id: 'all',
       name: 'View all',
-      icon: 'topicControls-imgGroup60',
+      icon: 'topics-imgGroup59',
       description: 'Browse all articles in this topic.',
     },
   ]
@@ -85,7 +85,7 @@ export function Topic({ catalog, hubId, subjectId }: TopicProps) {
   const subject = subjects.find(item => item.id === selectedSubject) ?? {
     id: 'all',
     name: 'View all',
-    icon: 'topicControls-imgGroup60',
+    icon: 'topics-imgGroup59',
     description: 'Browse all articles in this topic.',
   }
   const posts = catalog.articles

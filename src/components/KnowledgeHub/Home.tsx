@@ -6,6 +6,7 @@ import { useRouter } from 'next/router'
 import { Page } from '../Page'
 import { hubs } from './fixtures'
 import { KBArticle, KBCatalog, featuredArticles, articlePath } from './content'
+import type { KBMostRead } from './content'
 import styles from './home-v2.module.scss'
 import { Icon } from './Icon'
 import { ArrowButton, HubCard } from './Components'
@@ -13,6 +14,7 @@ import { KnowledgeFooter } from './KnowledgeFooter'
 import { GuideLife } from './GuideLife'
 import { NeuronIcon } from './NeuronIcon'
 import { searchLengthBucket, trackKBEvent } from './analytics'
+import { useNewsletterSignup } from './useNewsletterSignup'
 
 export { Icon } from './Icon'
 
@@ -33,7 +35,15 @@ export function Eyebrow({ icon, children }: { icon: string; children: React.Reac
   )
 }
 
-export function KnowledgeHubHome({ catalog, counts }: { catalog: KBCatalog; counts: Record<string, number> }) {
+export function KnowledgeHubHome({
+  catalog,
+  counts,
+  mostRead,
+}: {
+  catalog: KBCatalog
+  counts: Record<string, number>
+  mostRead: KBMostRead
+}) {
   const router = useRouter()
   const canonicalPath = `${router.locale && router.locale !== 'en' ? `/${router.locale}` : ''}/knowledge-base`
   const [query, setQuery] = useState('')
@@ -69,9 +79,12 @@ export function KnowledgeHubHome({ catalog, counts }: { catalog: KBCatalog; coun
       controller.abort()
     }
   }, [query, router.locale])
-  const recommendations = [
-    ...new Map(catalog.hubs.flatMap(h => featuredArticles(catalog, h.id).slice(0, 1)).map(a => [a.id, a])).values(),
-  ].slice(0, 4)
+  const hasReadRanking = mostRead.articles.length > 0
+  const recommendations = hasReadRanking
+    ? mostRead.articles
+    : [
+        ...new Map(catalog.hubs.flatMap(h => featuredArticles(catalog, h.id).slice(0, 1)).map(a => [a.id, a])).values(),
+      ].slice(0, 4)
 
   return (
     <>
@@ -123,8 +136,9 @@ export function KnowledgeHubHome({ catalog, counts }: { catalog: KBCatalog; coun
                 <Eyebrow icon="topics-imgGroup59">Explore by topic</Eyebrow>
                 <h2 id="topics-title">Find your starting point</h2>
                 <p className={styles.topicIntro}>
-                  New to blockchain or exploring a specific question? Browse articles by topic and build your
-                  understanding at your own pace.
+                  New to blockchain or exploring a specific question?
+                  <br className={styles.topicIntroBreak} /> Browse articles by topic and build your understanding at
+                  your own pace.
                 </p>
                 <div className={styles.hubGrid}>
                   {catalog.hubs.map((hub, index) => {
@@ -134,7 +148,6 @@ export function KnowledgeHubHome({ catalog, counts }: { catalog: KBCatalog; coun
                         key={hub.id}
                         name={hub.name}
                         description={hubs[index]?.description ?? ''}
-                        index={index}
                         hubId={hub.id}
                         titles={articles.map(a => a.title)}
                         articles={articles}
@@ -150,7 +163,12 @@ export function KnowledgeHubHome({ catalog, counts }: { catalog: KBCatalog; coun
                 <div className={styles.popularHeader}>
                   <div>
                     <Eyebrow icon="popular-imgIconamoonStarThin">Reader favourites</Eyebrow>
-                    <h2 id="popular-title">Recommended reading</h2>
+                    <h2
+                      id="popular-title"
+                      title={hasReadRanking ? `GA4 views: ${mostRead.startDate} – ${mostRead.endDate}` : undefined}
+                    >
+                      {hasReadRanking ? 'Most read this year' : 'Recommended reading'}
+                    </h2>
                   </div>
                   <div className={styles.searchActions}>
                     <div className={styles.searchWrap}>
@@ -318,7 +336,7 @@ export function PreviewNotice({ notice, onClose }: { notice: string; onClose: ()
 }
 
 export function Newsletter() {
-  const [notice, setNotice] = useState('')
+  const { onSubmit, isSubmitting, status, isError, isInvalid } = useNewsletterSignup('signal')
   return (
     <>
       <section className={styles.newsletter} aria-labelledby="newsletter-title">
@@ -330,27 +348,26 @@ export function Newsletter() {
               A monthly briefing on the most significant developments shaping blockchain technology. Tech-focused and
               grounded in evidence. No hype. No price talk.
             </p>
-            <form
-              onSubmit={event => {
-                event.preventDefault()
-                trackKBEvent('kb_newsletter_submit_preview', { placement: 'signal' })
-                setNotice(
-                  'This is a design preview. Your email has not been sent or stored, and no subscription has been created.',
-                )
-              }}
-            >
+            <form onSubmit={event => void onSubmit(event)} aria-busy={isSubmitting}>
               <input
                 aria-label="Email address"
+                aria-describedby="signal-newsletter-status"
+                aria-invalid={isInvalid || undefined}
+                name="email"
                 type="email"
                 required
+                maxLength={254}
+                disabled={isSubmitting}
                 placeholder="you@email.com"
                 autoComplete="email"
               />
-              <button>
-                Get the briefing <span aria-hidden="true">→</span>
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting…' : 'Get the briefing'} <span aria-hidden="true">→</span>
               </button>
             </form>
-            <small>Monthly. Unsubscribe anytime.</small>
+            <small id="signal-newsletter-status" role={isError ? 'alert' : 'status'} aria-live="polite">
+              {status || 'Monthly. Unsubscribe anytime.'}
+            </small>
           </div>
           <div className={styles.resourceGrid}>
             <a
@@ -417,7 +434,6 @@ export function Newsletter() {
           </div>
         </div>
       </section>
-      <PreviewNotice notice={notice} onClose={() => setNotice('')} />
     </>
   )
 }

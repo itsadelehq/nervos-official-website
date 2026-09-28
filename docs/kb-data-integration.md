@@ -39,7 +39,7 @@ than silently loading stale metadata.
 ## Implemented routes
 
 - `/knowledge-base`: actual Hub counts, manually referenced starter picks with same-Hub
-  fallback, honest Recommended reading label, five search suggestions.
+  fallback, GA-backed Most read cards (see `kb-most-read.md`), five search suggestions.
 - `/knowledge-base/topic?hub=<id>`: original Subjects tabs, selected-Subject article grid,
   density slider and Filter menu. Real data fills the approved layout; selecting
   View all removes the Subject filter without adding grouped section headings.
@@ -55,8 +55,12 @@ than silently loading stale metadata.
   Topic/Subject links and up to three relevant related articles. Existing slugs,
   including case and underscores, are preserved. Locale prefixes are unchanged.
   There is no redirect to a new Hub- or Subject-based article URL.
-- Start Here further-reading links reference real source IDs. These initial
-  editorial suggestions and existing English guide copy still need content review.
+- Start Here uses Stefan's approved eight further-reading articles, in order,
+  across four steps. The existing canonical account-abstraction slug is retained
+  instead of the typo in the feedback URL. The fifth "Try it & build" step has
+  been removed from the navigation and guide, and the headline says four steps.
+  The remaining English guide copy and selections are unchanged. Steps 3 and 4
+  use the approved revised titles.
 - Listings use actual locale files. Existing public article routes retain
   their established English fallback when the requested translation is absent,
   so previously valid locale-prefixed URLs still serve directly. This fallback
@@ -81,6 +85,15 @@ keep their established destinations. No public article redirects or article rout
 The accepted UI is the pre-integration `951c139` design. Data integration must
 preserve its page structure, styling, cards and controls. Handoff document
 interaction proposals do not override the approved UI without user approval.
+On 2026-09-28 the user approved Ahron's PDF refinements: uppercase home labels,
+explicit desktop copy breaks, no Hub numbering, purple/white reading-link hover,
+aligned display headings and guide spacing, darker Subject/Step borders, and a
+single desktop Subject row with an eye icon for View all. Mobile rails remain
+scrollable rather than squeezing every card into the viewport.
+
+Both KB newsletter forms now call the existing SendGrid signup endpoint and
+configured list. Email-only requests omit the name field; the old named signup
+remains supported. See `kb-newsletter-integration.md` for behavior and tests.
 
 ## Remaining review / release gates
 
@@ -92,12 +105,17 @@ interaction proposals do not override the approved UI without user approval.
   explainCKBot suffix). The Hub currently uses eligible fallback content.
 - 73 renditions have no supplied author. Show that absence rather than inventing
   attribution. Existing website date corrections were reused and audited.
-- Production taxonomy approval, curated fallback/Start Here approval, translated
+- Production taxonomy approval, curated fallback selection, translated
   Hub labels/guide copy, URL alias review, sitemap/canonical/hreflang rollout and
   a production crawl remain required before release.
-- No current-year GA snapshot was supplied. There is no fake popularity ranking
-  or Like counter on data-backed pages. Newsletter forms remain explicit previews;
-  connecting subscriptions and unresolved external destination choices is separate.
+- The homepage Most read cards use the approved 2025-09-28–2026-09-27 GA4
+  snapshot. Refresh is manual, not a live GA API integration. Archive and Hub
+  popularity controls remain disabled; their default is still newest first.
+- The downloaded September 24 SEO handoff has been reviewed. Its pagination
+  rules conflict, its Hub path URLs require an additional routing change, and
+  its static archive-page list exceeds the current page count. Resolve these
+  before implementing the sitemap; see `kb-seo-handoff-review.md`. Search
+  Console submission will be handled by the team.
 
 ## Checks
 

@@ -11,16 +11,15 @@ const ts = require('typescript')
 
 const directory = path.dirname(fileURLToPath(import.meta.url))
 
-function renderFooter() {
+function renderFooter(newsletter = {}) {
   const events = []
-  const statuses = []
+  const signup = { onSubmit: () => undefined, isSubmitting: false, status: '', isError: false, ...newsletter }
   const filename = path.join(directory, 'KnowledgeFooter.tsx')
   const { outputText } = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
   })
   const exports = {}
   const imports = {
-    react: { useState: () => ['', value => statuses.push(value)] },
     'react/jsx-runtime': require('react/jsx-runtime'),
     'next/link': { default: 'a' },
     'next/image': { default: 'img' },
@@ -28,6 +27,12 @@ function renderFooter() {
     './footer-v2.module.scss': { default: {} },
     './analytics': {
       trackKBEvent: (name, data) => events.push({ name, data: { ...data } }),
+    },
+    './useNewsletterSignup': {
+      useNewsletterSignup: placement => {
+        assert.equal(placement, 'footer')
+        return signup
+      },
     },
   }
   vm.runInNewContext(outputText, {
@@ -37,7 +42,7 @@ function renderFooter() {
       return imports[name]
     },
   })
-  return { tree: exports.KnowledgeFooter(), events, statuses }
+  return { tree: exports.KnowledgeFooter(), events, signup }
 }
 
 function nodes(node) {
@@ -110,17 +115,22 @@ test('footer social links identify the selected network, not its URL', () => {
   }
 })
 
-test('footer email submission records a preview attempt, never the email or a signup success', () => {
-  const { tree, events, statuses } = renderFooter()
-  const form = nodes(tree).find(node => node.type === 'form')
-  let prevented = false
-  form.props.onSubmit({
-    preventDefault: () => {
-      prevented = true
-    },
-    currentTarget: { email: 'private@example.test' },
+test('footer email form uses the shared real signup handler and disables controls while pending', () => {
+  let submitted
+  const { tree, events } = renderFooter({
+    isSubmitting: true,
+    status: 'Submitting…',
+    onSubmit: event => (submitted = event),
   })
-  assert.equal(prevented, true)
-  assert.deepEqual(events, [{ name: 'kb_newsletter_submit_preview', data: { placement: 'footer' } }])
-  assert.deepEqual(statuses, ['Static preview only. Your email was not sent or stored.'])
+  const form = nodes(tree).find(node => node.type === 'form')
+  const submission = {}
+  form.props.onSubmit(submission)
+  assert.equal(submitted, submission)
+  assert.equal(form.props['aria-busy'], true)
+  const input = nodes(form).find(node => node.type === 'input')
+  assert.equal(input.props.name, 'email')
+  assert.equal(input.props.required, true)
+  assert.equal(input.props.disabled, true)
+  assert.equal(nodes(form).find(node => node.type === 'button').props.disabled, true)
+  assert.deepEqual(events, [], 'Rendering the form does not emit a submission event')
 })

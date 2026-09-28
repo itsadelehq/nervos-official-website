@@ -123,7 +123,6 @@ export function ReadingList({
 export function HubCard({
   name,
   description,
-  index,
   titles,
   articles,
   hubId,
@@ -131,7 +130,7 @@ export function HubCard({
 }: {
   name: string
   description: string
-  index: number
+  index?: number
   titles: string[]
   articles?: KBArticle[]
   hubId?: string
@@ -139,7 +138,6 @@ export function HubCard({
 }) {
   return (
     <article className={styles.hubCard}>
-      <Icon name={`topics-imgNumber${numbers[index] ?? 'One'}Circle`} />
       <div className={styles.hubContent}>
         <h3>
           <Link
@@ -200,17 +198,18 @@ export function StepSection({
           </ul>
         )}
       </div>
-      <div className={styles.deeper}>
-        <h3>
-          Go deeper <Icon name="startBody-imgArrowArrowSubRightDown" size={24} />
-        </h3>
-        <ReadingList
-          titles={articles ? articles.map(a => a.title) : step.reading}
-          articles={articles}
-          analyticsContext={{ placement: 'start_here_reading', step: index + 1 }}
-        />
-        {articles?.length === 0 && <p>No further reading available in this language.</p>}
-      </div>
+      {(articles ? articles.length > 0 : step.reading.length > 0) && (
+        <div className={styles.deeper}>
+          <h3>
+            Go deeper <Icon name="startBody-imgArrowArrowSubRightDown" size={24} />
+          </h3>
+          <ReadingList
+            titles={articles ? articles.map(a => a.title) : step.reading}
+            articles={articles}
+            analyticsContext={{ placement: 'start_here_reading', step: index + 1 }}
+          />
+        </div>
+      )}
     </section>
   )
 }

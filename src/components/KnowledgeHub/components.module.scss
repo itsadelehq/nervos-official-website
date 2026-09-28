@@ -52,7 +52,7 @@
   text-align: left;
   text-transform: none;
   background: var(--kbSurface);
-  border: 0.5px solid var(--kbBorder);
+  border: 1px solid var(--kbNeutral400);
   border-radius: var(--kbRadiusControl);
   transition: transform 220ms ease;
   @include tokens.type(subheader2);
@@ -90,7 +90,8 @@
 }
 
 .subject > span:last-child {
-  max-width: 194px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .selected img {
@@ -130,12 +131,20 @@
   color: var(--kbText);
   background: var(--kbSubtle);
   border-radius: 3px;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
   @include tokens.type(subheader2);
 }
 
 .compactReading a {
   padding: 8px;
   @include tokens.type(body2);
+}
+
+.readingList a:is(:hover, :focus-visible) {
+  color: var(--kbInverseText);
+  background: var(--kbAccent);
 }
 
 .readingList small {
@@ -209,12 +218,12 @@
 
 .hubContent {
   width: 100%;
-  margin-top: 24px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .arrowButton,
   .arrowButtonIcon,
+  .readingList a,
   .readingList small,
   .readingArrow,
   .readingTitle {
@@ -276,6 +285,11 @@
   align-items: center;
   text-transform: uppercase;
   @include tokens.type(h4);
+}
+
+.stepSection .stepLabel > img {
+  // Align the circle with the uppercase glyphs, not the font's descender space.
+  transform: translateY(-2px);
 }
 
 .stepSection > .stepTop h2 {

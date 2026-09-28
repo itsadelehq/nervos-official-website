@@ -21,7 +21,8 @@ type KBEvents = {
   kb_resource_click: { resource_id: string; placement: string }
   kb_footer_link_click: { group: string; link_id: string }
   kb_social_click: { network: string; placement: string }
-  kb_newsletter_submit_preview: { placement: 'signal' | 'footer' }
+  kb_newsletter_submit: { placement: 'signal' | 'footer' }
+  kb_newsletter_result: { placement: 'signal' | 'footer'; outcome: 'accepted' | 'error' }
   kb_back_to_top: { article_id: string }
 }
 
@@ -40,7 +41,8 @@ const fields: { [Event in keyof KBEvents]: readonly (keyof KBEvents[Event])[] } 
   kb_resource_click: ['resource_id', 'placement'],
   kb_footer_link_click: ['group', 'link_id'],
   kb_social_click: ['network', 'placement'],
-  kb_newsletter_submit_preview: ['placement'],
+  kb_newsletter_submit: ['placement'],
+  kb_newsletter_result: ['placement', 'outcome'],
   kb_back_to_top: ['article_id'],
 }
 

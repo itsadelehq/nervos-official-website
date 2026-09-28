@@ -15,6 +15,11 @@ export interface KBArticle {
   excludedFromRecommendations: boolean
   text?: string
 }
+export interface KBMostRead {
+  startDate: string
+  endDate: string
+  articles: KBArticle[]
+}
 export interface KBCatalog {
   articles: KBArticle[]
   hubs: { id: string; name: string; heading: string; order: number }[]

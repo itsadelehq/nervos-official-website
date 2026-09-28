@@ -1,4 +1,4 @@
-// Static copy transcribed from Figma; not a verified content migration.
+// Titles follow the editorial feedback; body copy remains transcribed from Figma.
 export const guideSteps = [
   {
     id: 'step-1',
@@ -15,7 +15,7 @@ export const guideSteps = [
   },
   {
     id: 'step-2',
-    title: 'Why it’s built differently',
+    title: 'Why it’s built differently?',
     summary:
       'The short version: CKB refuses the usual trade-off. It keeps Proof-of-Work security and stays fully programmable, because its RISC-V VM supports every cryptographic primitive and gives it account abstraction by default.',
     body: 'Three design choices set CKB apart:',
@@ -28,7 +28,7 @@ export const guideSteps = [
   },
   {
     id: 'step-3',
-    title: 'CKB & Bitcoin',
+    title: 'What it makes possible',
     summary:
       'The idea: CKB is positioned as the “Contract Kernel of Bitcoin.” Through RGB++, the UTXO Stack and the Fiber payment network, it adds programmability and scale to Bitcoin, without cross-chain bridges.',
     body: 'Bitcoin is secure but deliberately limited. Bridging its assets to other chains has caused some of crypto’s biggest hacks. CKB’s answer is RGB++ and client-side validation: because CKB shares Bitcoin’s UTXO-style model, assets and logic can be tied to Bitcoin without handing custody to a bridge. Fiber then adds Lightning-style instant payments on top.',
@@ -41,7 +41,7 @@ export const guideSteps = [
   },
   {
     id: 'step-4',
-    title: 'Quantum & crypto agility',
+    title: 'Crypto-Agile & Quantum Ready',
     summary:
       'Why CKB is ready: the real quantum problem isn’t just resistance. It’s whether a chain can change its cryptography without a hard fork. CKB can. That property is called crypto agility.',
     body: 'A powerful enough quantum computer could one day break the signatures (ECDSA over secp256k1) that Bitcoin and Ethereum rely on. Swapping those out usually needs a contentious hard fork and a governance vote. On CKB, because the RISC-V VM supports all cryptographic primitives, a post-quantum scheme can be adopted as ordinary code. Quantum Purse, a community-built wallet using the post-quantum SPHINCS+ scheme, proved it: no fork, no vote, no protocol change.',
@@ -50,15 +50,6 @@ export const guideSteps = [
       'CKB can adopt post-quantum cryptography as regular code. That’s crypto agility.',
       'Quantum Purse (SPHINCS+) demonstrated it live, with no protocol change.',
     ],
-    reading: ['secp256k1, explained', 'Unbreakable? How SHA-256 works', 'Unbreakable? How SHA-256 works'],
-  },
-  {
-    id: 'step-5',
-    title: 'Try it & build',
-    summary:
-      'Next step: you now have the map. Pick a door: see the live network, get a wallet, or start building on the RISC-V VM.',
-    body: 'You don’t have to read everything. The fastest way to make CKB click is to touch it once.',
-    points: [],
     reading: ['secp256k1, explained', 'Unbreakable? How SHA-256 works', 'Unbreakable? How SHA-256 works'],
   },
 ]

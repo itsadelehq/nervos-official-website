@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Logo from '../Footer/logo.svg'
 import { trackKBEvent } from './analytics'
+import { useNewsletterSignup } from './useNewsletterSignup'
 import styles from './footer-v2.module.scss'
 
 type FooterGroup = {
@@ -92,7 +92,7 @@ function FooterArrow({ kind = 'external' }: { kind?: 'external' | 'chevron' | 'h
 }
 
 export function KnowledgeFooter() {
-  const [status, setStatus] = useState('')
+  const { onSubmit, isSubmitting, status, isError, isInvalid } = useNewsletterSignup('footer')
   return (
     <footer className={styles.footer}>
       <div className={styles.top}>
@@ -148,15 +148,24 @@ export function KnowledgeFooter() {
             The Nervos Network is an ambitious project with a strong mission that is always moving forward. Signing up
             to our monthly newsletter will give you all the updates you need.
           </p>
-          <form
-            onSubmit={event => {
-              event.preventDefault()
-              trackKBEvent('kb_newsletter_submit_preview', { placement: 'footer' })
-              setStatus('Static preview only. Your email was not sent or stored.')
-            }}
-          >
-            <input type="email" required aria-label="Footer email address" placeholder="Your Email" />
-            <button aria-label="Preview newsletter subscription">
+          <form onSubmit={event => void onSubmit(event)} aria-busy={isSubmitting}>
+            <input
+              type="email"
+              name="email"
+              required
+              maxLength={254}
+              disabled={isSubmitting}
+              autoComplete="email"
+              aria-label="Footer email address"
+              aria-describedby={status ? 'footer-newsletter-status' : undefined}
+              aria-invalid={isInvalid || undefined}
+              placeholder="Your Email"
+            />
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              aria-label={isSubmitting ? 'Submitting newsletter signup' : 'Subscribe to newsletter'}
+            >
               <Image src="/images/knowledge-hub/footer-submit.svg" width={20} height={14.286} alt="" unoptimized />
             </button>
           </form>
@@ -182,7 +191,12 @@ export function KnowledgeFooter() {
           </div>
           <span className={styles.socialRule} aria-hidden="true" />
           {status && (
-            <p role="status" className={styles.status}>
+            <p
+              id="footer-newsletter-status"
+              role={isError ? 'alert' : 'status'}
+              aria-live="polite"
+              className={styles.status}
+            >
               {status}
             </p>
           )}
