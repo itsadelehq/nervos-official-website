@@ -68,7 +68,6 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
     ['Ecosystem', 'https://ckbdapps.com/ecosystem'],
     ['Nervos Foundation', '/foundation'],
     ['Cryptape', 'https://cryptape.com/'],
-    ['Godwoken', 'https://godwoken.com/'],
     ['Nervina Labs', 'https://nervina.io/'],
     ['Tunnel Vision Labs', 'https://tunnelvisionlabs.xyz/'],
     ['Community', '/community'],
@@ -80,7 +79,7 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
     ['Medium', 'https://medium.com/nervosnetwork'],
     ['Youtube', 'https://www.youtube.com/c/NervosNetwork'],
   ]
-  assert.equal(links.length, 23)
+  assert.equal(links.length, 22)
   assert.deepEqual(
     links.map(link => [link.props.children[0], link.props.href]),
     destinations,
@@ -124,7 +123,6 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
       'ecosystem_heading',
       'nervos_foundation',
       'cryptape',
-      'godwoken',
       'nervina_labs',
       'tunnel_vision_labs',
       'community_heading',

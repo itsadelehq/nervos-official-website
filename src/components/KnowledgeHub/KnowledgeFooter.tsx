@@ -37,7 +37,6 @@ const groups: FooterGroup[] = [
     links: [
       ['Nervos Foundation', '/foundation'],
       ['Cryptape', 'https://cryptape.com/'],
-      ['Godwoken', 'https://godwoken.com/'],
       ['Nervina Labs', 'https://nervina.io/'],
       ['Tunnel Vision Labs', 'https://tunnelvisionlabs.xyz/'],
     ],
