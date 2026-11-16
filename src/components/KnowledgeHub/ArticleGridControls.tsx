@@ -31,14 +31,17 @@ export function ArticleGridControls({
   placement = 'article_grid',
   pageType,
   hubId,
+  language = 'en',
 }: {
   density: number
   onDensityChange: (value: number) => void
   placement?: string
   pageType?: 'all_articles' | 'search' | 'hub'
   hubId?: string
+  language?: string
 }) {
   const hubLayout = pageType === 'hub'
+  const chinese = language === 'zh'
   const minColumns = hubLayout ? 2 : 3
   const maxColumns = hubLayout ? 3 : 5
   const defaultColumns = hubLayout ? 3 : 4
@@ -47,16 +50,18 @@ export function ArticleGridControls({
     onDensityChange(value)
   }
   return (
-    <div className={styles.controls} aria-label="Article layout">
+    <div className={styles.controls} aria-label={chinese ? '文章布局' : 'Article layout'}>
       <button
         className={styles.gridReset}
-        aria-label={`Reset to ${hubLayout ? 'three' : 'four'} cards per row`}
+        aria-label={
+          chinese ? `恢复每行 ${defaultColumns} 张卡片` : `Reset to ${hubLayout ? 'three' : 'four'} cards per row`
+        }
         onClick={() => changeDensity(defaultColumns)}
       >
         <span className={styles.gridIcon} aria-hidden="true" />
       </button>
       <input
-        aria-label="Cards per row"
+        aria-label={chinese ? '每行卡片数量' : 'Cards per row'}
         type="range"
         min={minColumns}
         max={maxColumns}
@@ -70,23 +75,23 @@ export function ArticleGridControls({
             <FilterOpenTracker open={open} placement={placement} pageType={pageType} hubId={hubId} />
             <MenuButton className={styles.filterButton}>
               <Icon name="topicBody-imgInterfaceSlider03" size={24} />
-              Sort
+              {chinese ? '排序' : 'Sort'}
             </MenuButton>
             <MenuItems anchor={{ to: 'bottom start', gap: 8, padding: 16 }} className={styles.filterOptions}>
               <MenuItem>
                 <button className={styles.filterOption} type="button">
-                  Latest to oldest <Icon name="interface-check" size={16} />
-                  <span className={styles.srOnly}> (selected)</span>
+                  {chinese ? '从新到旧' : 'Latest to oldest'} <Icon name="interface-check" size={16} />
+                  <span className={styles.srOnly}>{chinese ? '（已选择）' : ' (selected)'}</span>
                 </button>
               </MenuItem>
               <MenuItem disabled>
                 <button className={styles.filterOption} type="button" disabled>
-                  Most popular
+                  {chinese ? '最受欢迎' : 'Most popular'}
                 </button>
               </MenuItem>
               <MenuItem disabled>
                 <button className={styles.filterOption} type="button" disabled>
-                  Must reads
+                  {chinese ? '必读文章' : 'Must reads'}
                 </button>
               </MenuItem>
             </MenuItems>

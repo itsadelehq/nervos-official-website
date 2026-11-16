@@ -75,11 +75,25 @@ for (const locale of ['', 'en', 'zh', 'es']) {
       path,
     )
     assert.equal(
-      html.match(/<title>([^<]+)<\/title>/)?.[1],
-      page > 1 ? `All articles — Page ${page}` : 'All articles',
+      html.match(/<title\b[^>]*>([^<]+)<\/title>/)?.[1],
+      language === 'zh'
+        ? page > 1
+          ? `全部文章 — 第 ${page} 页`
+          : '全部文章'
+        : page > 1
+          ? `All articles — Page ${page}`
+          : 'All articles',
       path,
     )
-    assert.match(html, /<h1\b[^>]*>All articles<\/h1>/, path)
+    assert.match(html, language === 'zh' ? /<h1\b[^>]*>全部文章<\/h1>/ : /<h1\b[^>]*>All Articles<\/h1>/, path)
+    const description = html.match(/<meta\b[^>]*name="description"[^>]*content="([^"]+)"/)?.[1]
+    assert.equal(
+      description,
+      language === 'zh'
+        ? `探索知识库中的各类文章。第 ${page} 页。`
+        : `Explore articles from across the Knowledge Base. Page ${page}.`,
+      path,
+    )
     assert.doesNotMatch(html, /<a\b[^>]*href="[^"]*sort_by=/, path)
     const data = JSON.parse(html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/)?.[1] ?? '{}')
     assert.equal(data.props.pageProps.page, page, path)
@@ -93,7 +107,7 @@ for (const locale of ['', 'en', 'zh', 'es']) {
   }
 }
 console.log(
-  `${pages} real archive pages retain pagination, distinct head metadata and unchanged visible H1; invalid pages stay 404`,
+  `${pages} real archive pages retain pagination and page-specific metadata with Chinese listing copy; invalid pages stay 404`,
 )
 
 for (const locale of ['fr', 'ko', 'tr', 'pt']) {

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import migrations from '../public/education_hub_articles/metadata/slug-migrations.json'
 import catalog from '../public/education_hub_articles/metadata/catalog.json'
 import { kbHubPath, resolveKBHub } from './utils/kb-hubs'
+import { prefersMarkdown } from './utils/markdown-accept'
 
 const renamedFolders = new Map(migrations.renames.map(({ from, to }) => [from, to]))
 const assetPrefix = '/education_hub_articles/'
@@ -108,17 +109,38 @@ export function middleware(request: NextRequest) {
   if (listingDestination) return NextResponse.redirect(listingDestination, 308)
   const pagePath = requestPagePath(request)
   const migratedPath = migratedAssetPath(pagePath) ?? migratedArticlePath(pagePath, request.nextUrl.locale)
-  if (!migratedPath) return NextResponse.next()
-  const destination = new URL(request.url)
-  // Use the final full path (already locale-prefixed) and preserve the query.
-  // getStaticProps alone cannot see query parameters on incoming old URLs.
-  destination.pathname = migratedPath
-  return NextResponse.redirect(destination, 308)
+  if (migratedPath) {
+    const destination = new URL(request.url)
+    // Use the final full path (already locale-prefixed) and preserve the query.
+    // getStaticProps alone cannot see query parameters on incoming old URLs.
+    destination.pathname = migratedPath
+    return NextResponse.redirect(destination, 308)
+  }
+
+  // B9 applies to the two English landing URLs only. Keep SSG and ordinary
+  // browser rendering intact, and never turn a client-navigation JSON request
+  // into Markdown even when requestPagePath resolves it to a landing page.
+  const pathname = request.nextUrl.pathname
+  if (
+    (request.method === 'GET' || request.method === 'HEAD') &&
+    request.nextUrl.locale === 'en' &&
+    !request.headers.has('x-nextjs-data') &&
+    !pathname.startsWith('/_next/') &&
+    (pathname === '/' || pathname === '/knowledge-base') &&
+    prefersMarkdown(request.headers.get('accept') ?? undefined)
+  ) {
+    const destination = new URL(
+      pathname === '/' ? '/api/markdown-homepage/home' : '/api/markdown-homepage/knowledge-base',
+      request.url,
+    )
+    return NextResponse.rewrite(destination)
+  }
+  return NextResponse.next()
 }
 
 // Next 14 appends an optional .json group to middleware matchers. A bare
 // terminal parameter would consume that group as its constraint, so use a
 // catch-all here and keep the exact single-segment check in migratedArticlePath.
 export const config = {
-  matcher: ['/education_hub_articles/:path*', '/knowledge-base/:path*'],
+  matcher: ['/', '/education_hub_articles/:path*', '/knowledge-base/:path*'],
 }

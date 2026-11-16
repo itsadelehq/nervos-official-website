@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { after, test } from 'node:test'
 import ts from 'typescript'
 import { KB_HUBS as configuredKBHubs } from '../config/kb-hubs.mjs'
+import markdownAccept from './fixtures/load-markdown-accept.mjs'
 
 const require = createRequire(import.meta.url)
 const { NextRequest } = require('next/server')
@@ -50,6 +51,7 @@ const { hubDestination, middleware, requestPagePath } = loadTypeScript('src/midd
   '../public/education_hub_articles/metadata/slug-migrations.json': migrations,
   '../public/education_hub_articles/metadata/catalog.json': catalog,
   './utils/kb-hubs': hubModule,
+  './utils/markdown-accept': markdownAccept,
 })
 const prefixes = ['', ...i18n.locales.map(locale => `/${locale}`)]
 const request = (pathname, origin = 'https://www.nervos.org') =>
@@ -336,7 +338,7 @@ test('Next 14 compiles matchers that reach legacy and canonical Hub HTML and dat
       const incoming = request(`${prefix}${pathname}`)
       assert.equal(
         matches(`/${incoming.nextUrl.locale}${incoming.nextUrl.pathname}`, incoming, {}),
-        false,
+        pathname === '/',
         incoming.url,
       )
       assert.deepEqual(middleware(incoming), { kind: 'next' }, incoming.url)

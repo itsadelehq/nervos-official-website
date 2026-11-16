@@ -100,6 +100,27 @@ function assertDescriptions(html, expected) {
   assert.ok([...expected].length <= 155)
 }
 
+test('Twitter metadata uses name attributes while Open Graph and Article metadata retain property attributes', () => {
+  const tags = Array.from(documentFor(renderMetadata('Existing description')).getElementsByTagName('meta'))
+  const keys = tags.map(tag => tag.getAttribute('name') || tag.getAttribute('property'))
+  assert.equal(new Set(keys).size, tags.length, 'Each metadata field is emitted only once')
+  const card = tags.filter(tag => tag.getAttribute('name') === 'twitter:card')
+  assert.equal(card.length, 1)
+  assert.equal(card[0].getAttribute('content'), 'summary_large_image')
+  for (const tag of tags) {
+    const name = tag.getAttribute('name') || ''
+    const property = tag.getAttribute('property')
+    if (name === 'description' || name.startsWith('twitter:')) {
+      assert.equal(tag.hasAttribute('property'), false, name)
+    } else {
+      assert.match(property, /^(?:og|article):/)
+      assert.equal(tag.hasAttribute('name'), false, property)
+    }
+  }
+  assert.ok(keys.includes('og:title'))
+  assert.ok(keys.includes('article:published_time'))
+})
+
 test('description normalization preserves supplied short copy and makes missing copy explicitly empty', () => {
   for (const input of [undefined, null, '', ' \t\n\r\u00a0 ']) assert.equal(metaDescription(input), '')
   assert.equal(

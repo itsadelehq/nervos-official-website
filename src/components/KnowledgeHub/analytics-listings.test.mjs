@@ -445,6 +445,47 @@ test('shared pagination still preserves the current route and query when custom 
   }
 })
 
+test('Chinese archive control, search, breadcrumb and pagination labels preserve the existing interactions', () => {
+  const controls = loadComponent('ArticleGridControls.tsx')
+  const grid = controls.exports.ArticleGridControls({ density: 4, onDensityChange: () => undefined, language: 'zh' })
+  assert.equal(grid.props['aria-label'], '文章布局')
+  assert.equal(nodes(grid).find(node => node.type === 'input').props['aria-label'], '每行卡片数量')
+  assert.equal(nodes(grid).find(node => node.type === 'button').props['aria-label'], '恢复每行 4 张卡片')
+  const menu = nodes(grid)
+    .find(node => node.type === 'Menu')
+    .props.children({ open: true })
+  assert.equal(nodes(menu).find(node => node.type === 'MenuButton').props.children[1], '排序')
+  const options = nodes(menu).filter(node => node.type === 'button')
+  assert.equal(options[0].props.children[0], '从新到旧')
+  assert.equal(options[1].props.children, '最受欢迎')
+  assert.equal(options[2].props.children, '必读文章')
+  assert.ok(options[1].props.disabled && options[2].props.disabled, 'Localization does not enable unavailable sorts')
+  assert.equal(nodes(menu).find(node => node.type === 'MenuItems').props.anchor.to, 'bottom start')
+
+  const search = loadComponent('ArticleSearch.tsx', { effects: false, states: ['', true, [], '搜索中…'] })
+  const searchTree = nodes(search.exports.ArticleSearch({ language: 'zh' }))
+  assert.equal(searchTree.find(node => node.type === 'input').props.placeholder, '搜索全部文章')
+  assert.equal(searchTree.find(node => node.type === 'input').props['aria-label'], '搜索文章')
+  assert.ok(searchTree.some(node => node.type === 'button' && node.props['aria-label'] === '搜索'))
+  assert.ok(searchTree.some(node => node.type === 'button' && node.props['aria-label'] === '关闭搜索结果'))
+  assert.ok(searchTree.some(node => node.props.role === 'status' && node.props.children === '请输入搜索关键词。'))
+
+  const breadcrumb = loadComponent('Shared.tsx')
+  const trail = nodes(breadcrumb.exports.Breadcrumb({ current: '全部文章', revision: true, language: 'zh' }))
+  assert.equal(trail[0].props['aria-label'], '面包屑导航')
+  assert.equal(trail.find(node => node.type === 'a').props.children, '知识库')
+  assert.equal(trail.find(node => node.type === 'a').props.locale, 'en')
+  assert.equal(trail.find(node => node.props['aria-current'] === 'page').props.children, '全部文章')
+
+  const pagination = loadComponent('../Pagination/index.tsx')
+  const paging = nodes(pagination.exports.default({ pageCount: 9, currentPage: 2, language: 'zh' }))
+  assert.equal(paging[0].props['aria-label'], '分页导航')
+  assert.ok(paging.some(node => node.type === 'a' && node.props['aria-label'] === '上一页'))
+  assert.ok(paging.some(node => node.type === 'a' && node.props['aria-label'] === '下一页'))
+  assert.ok(paging.some(node => node.type === 'a' && node.props['aria-label'] === '前往第 3 页'))
+  assert.equal(paging.find(node => node.props['aria-current'] === 'page').props['aria-label'], '第 2 页')
+})
+
 test('search breadcrumbs link back to All articles and retain breadcrumb click tracking', () => {
   const { exports, events } = loadComponent('Shared.tsx')
   const tree = nodes(

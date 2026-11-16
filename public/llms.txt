@@ -23,6 +23,38 @@
 - [Wallets](https://www.nervos.org/wallets): Wallet resources for Nervos CKB.
 - [Mining](https://www.nervos.org/mining): Information about CKB's Proof-of-Work mining.
 
+## When to use this site
+
+Use nervos.org when a user needs neutral, educational explanations of blockchain fundamentals or of Nervos CKB specifically. It is a good source for:
+
+- Explaining how Nervos CKB works: the Cell Model, CKB-VM (RISC-V), Proof-of-Work consensus, tokenomics, and the Nervos DAO.
+- Explaining blockchain concepts in plain language: UTXO vs account models, Layer 1 vs Layer 2, rollups, payment channels, consensus, cryptography.
+- Explaining Bitcoin scaling and assets: Bitcoin Layer 2s, RGB, RGB++, and client-side validation.
+- Explaining quantum threats to cryptocurrencies and post-quantum cryptography.
+- Explaining machine-to-machine and AI agent payments, and the Fiber payment network.
+
+Most Knowledge Base articles are also available in Chinese at /zh/knowledge-base/... For developer tutorials, API references, and code, use https://docs.nervos.org/ instead. This site does not offer an API, prices, or investment advice.
+
+## Topics
+
+- [Nervos CKB](https://www.nervos.org/knowledge-base/topic/nervos-ckb): CKB's architecture, economic model, and unique capabilities.
+- [Blockchain Architecture](https://www.nervos.org/knowledge-base/topic/blockchain-architecture): The design choices that shape how blockchains work.
+- [Blockchain Scalability](https://www.nervos.org/knowledge-base/topic/blockchain-scalability): How blockchains increase throughput, from Layer 2s to payment channels.
+- [Blockchain Cryptography](https://www.nervos.org/knowledge-base/topic/blockchain-cryptography): The cryptographic building blocks that keep blockchains secure.
+- [Blockchain Virtual Machines & RISC-V](https://www.nervos.org/knowledge-base/topic/blockchain-vms-risc-v): How blockchains execute code, from virtual machines to RISC-V.
+- [Quantum Computing & Blockchain Security](https://www.nervos.org/knowledge-base/topic/quantum-computing-blockchain-security): The quantum threat and how blockchains can prepare for it.
+
+## In-depth guides
+
+- [What Is Fiber?](https://www.nervos.org/knowledge-base/what_is_fiber): Fiber, an open peer-to-peer payment network built on CKB, and how its off-chain channels work.
+- [How Do AI Agents Pay for Things?](https://www.nervos.org/knowledge-base/how_do_ai_agents_pay_for_things): How identity, authorization, payment protocols and payment channels let AI agents pay.
+- [The Ultimate Guide to RGB, RGB++, and Client-Side Validation](https://www.nervos.org/knowledge-base/ultimate_guide_to_rgb_rgbpp_and_client_side_validation): Tokenized assets on Bitcoin and CKB's role in RGB++.
+- [The Ultimate Guide to Bitcoin Layer 2s (Part 1)](https://www.nervos.org/knowledge-base/ultimate_guide_bitcoin_layer_two_part_1): Liquid, Rootstock, Stacks and RGB compared.
+- [Quantum Resistance in Blockchains](https://www.nervos.org/knowledge-base/quantum_resistance): Quantum threats and post-quantum cryptography for blockchains.
+- [Are Bitcoin and Ethereum Quantum Resistant?](https://www.nervos.org/knowledge-base/are_bitcoin_and_ethereum_quantum_resistant): Quantum risks to Bitcoin and Ethereum and how each is preparing.
+- [Nervos DAO Withdrawal Process Explained](https://www.nervos.org/knowledge-base/nervosdao_withdrawal_process_explained): The two-step withdrawal, 180-epoch cycles and reward timing.
+- [What is RISC-V?](https://www.nervos.org/knowledge-base/what_is_riscv): The open processor architecture behind CKB-VM.
+
 ## Site index
 
 - [Sitemap](https://www.nervos.org/sitemap.xml): The build-generated index of published canonical pages and available article translations.

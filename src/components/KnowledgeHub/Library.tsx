@@ -17,6 +17,7 @@ export interface LibraryProps {
   query: string
   page: number
   total: number
+  archiveAlternates?: { language: string; url: string }[]
 }
 export function Library({ catalog, mode, hubId, query, page, total }: LibraryProps) {
   const hub = catalog.hubs.find(h => h.id === hubId)

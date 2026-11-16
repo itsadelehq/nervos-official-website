@@ -41,7 +41,7 @@ export function formatArticleDate(date: string | null) {
   if (Number.isNaN(value.getTime())) return 'Date not supplied'
   return value.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
 }
-export const byDate = (a: KBArticle, b: KBArticle) =>
+export const byDate = (a: Pick<KBArticle, 'id' | 'date'>, b: Pick<KBArticle, 'id' | 'date'>) =>
   (b.date || '').localeCompare(a.date || '') || a.id.localeCompare(b.id)
 export function featuredArticles(catalog: KBCatalog, hub: string) {
   const pins = catalog.featured

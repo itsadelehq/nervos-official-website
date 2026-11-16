@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { after, test } from 'node:test'
 import ts from 'typescript'
 import { KB_HUBS } from '../config/kb-hubs.mjs'
+import markdownAccept from './fixtures/load-markdown-accept.mjs'
 
 const require = createRequire(import.meta.url)
 const { NextRequest } = require('next/server')
@@ -50,6 +51,7 @@ const imports = {
   '../public/education_hub_articles/metadata/slug-migrations.json': migrations,
   '../public/education_hub_articles/metadata/catalog.json': catalog,
   './utils/kb-hubs': hubs.exports,
+  './utils/markdown-accept': markdownAccept,
 }
 new Function('require', 'module', 'exports', compiled)(
   name => {

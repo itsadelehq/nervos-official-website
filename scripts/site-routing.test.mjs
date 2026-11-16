@@ -45,7 +45,23 @@ test('D-19 default-English aliases never add a looping default-locale config red
     assert.equal((await route(path)).statusCode, undefined, path)
   }
   assert.equal((await route('/knowledge-base/BFT_consensus_mechanisms_(explainCKBot)')).statusCode, 308)
-  assert.equal((await route('/blog')).statusCode, 307, 'Existing archive redirect remains unchanged')
+})
+
+test('B6 retired archive routes fall through without redirecting to the removed site or another page', async () => {
+  for (const locale of ['', ...config.i18n.locales]) {
+    const prefix = locale ? `/${locale}` : ''
+    for (const pathname of ['/blog', '/blog/b6-retired-post', '/trailblazer', '/developer/grants', '/godwoken']) {
+      const url = `${prefix}${pathname}?utm_source=b6&tag=one&tag=two`
+      const result = await route(url)
+      // This fixture resolves redirects only; Next then returns the normal 404
+      // because no page exists at these retired paths.
+      assert.equal(result.statusCode, undefined, url)
+      assert.equal(result.resHeaders.Location, undefined, url)
+    }
+  }
+  const roadmap = await route('/about/roadmap?utm_source=b6')
+  assert.equal(roadmap.statusCode, 308)
+  assert.equal(formatUrl(roadmap.parsedUrl), '/journey?utm_source=b6')
 })
 
 test('llms.txt has a plain-text header on its canonical root URL without a redirect', async () => {

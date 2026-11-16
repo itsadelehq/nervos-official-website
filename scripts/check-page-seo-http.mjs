@@ -19,6 +19,22 @@ const alternatesFor = (route, languages) => [
   ...(languages.includes('en') ? [['x-default', production + route]] : []),
 ]
 const sorted = entries => entries.slice().sort(([a], [b]) => a.localeCompare(b))
+const archivePageIds = (language, page) =>
+  articles
+    .filter(article => article.language === language)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || '') || a.id.localeCompare(b.id))
+    .slice((page - 1) * 24, page * 24)
+    .map(article => article.id)
+    .sort()
+const archiveAlternatesFor = (language, page) => {
+  const ids = archivePageIds(language, page)
+  if (!ids.length) return []
+  const languages = i18n.locales.filter(locale => {
+    const other = archivePageIds(locale, page)
+    return other.length === ids.length && other.every((id, index) => id === ids[index])
+  })
+  return alternatesFor(`/knowledge-base/articles${page > 1 ? `?page=${page}` : ''}`, languages)
+}
 const attr = (node, name) => Array.from(node.attributes).find(attribute => attribute.name.toLowerCase() === name)?.value
 const mainHTML = html => {
   const main = html.match(/<main(?:\s[^>]*)?>[\s\S]*<\/main>/)?.[0]
@@ -144,7 +160,7 @@ for (const language of i18n.locales) {
     await check(pathFor('/knowledge-base/articles', language) + `?page=${page}&utm_source=d10`, {
       canonical: production + pathFor(route, count ? language : 'en'),
       language: count ? language : 'en',
-      alternates: [],
+      alternates: archiveAlternatesFor(language, page),
     })
   }
 }

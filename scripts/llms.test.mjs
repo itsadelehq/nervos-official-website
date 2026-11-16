@@ -8,17 +8,20 @@ const links = [...llms.matchAll(/^- \[([^\]]+)\]\((https:\/\/[^\s)]+)\): (.+)$/g
   ([, title, href, description]) => ({ title, href, description }),
 )
 
-test('llms.txt is a concise Markdown overview with a title, summary, and resource sections', () => {
+test('llms.txt includes the site overview, agent guidance, topics and in-depth resources', () => {
   assert.ok(llms.startsWith('# Nervos Network\n\n> '))
   assert.equal((llms.match(/^# /gm) ?? []).length, 1)
   assert.ok(/^## Start here$/m.test(llms))
   assert.ok(/^## Key concepts$/m.test(llms))
   assert.ok(/^## Build and explore$/m.test(llms))
+  assert.ok(/^## When to use this site$/m.test(llms))
+  assert.ok(/^## Topics$/m.test(llms))
+  assert.ok(/^## In-depth guides$/m.test(llms))
   assert.ok(/^## Site index$/m.test(llms))
   assert.ok(llms.endsWith('\n'))
   assert.ok(Buffer.byteLength(llms, 'utf8') < 8_192)
   assert.ok(!llms.includes('\uFFFD'), 'The file must contain valid UTF-8 text')
-  assert.equal(links.length, llms.split('\n').filter(line => line.startsWith('- ')).length)
+  assert.equal(links.length, llms.split('\n').filter(line => line.startsWith('- [')).length)
   assert.ok(links.length > 0)
 })
 
