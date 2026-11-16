@@ -59,7 +59,6 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
     ['CKB', '/ckbpage'],
     ['Mining', '/mining'],
     ['Wallets', '/wallets'],
-    ['Wiki', 'https://en.wikipedia.org/wiki/Nervos_Network'],
     ['Press Kit', '/media-kit'],
     ['Developers', '/developers'],
     ['Documentation', 'https://docs.nervos.org/'],
@@ -79,7 +78,7 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
     ['Medium', 'https://medium.com/nervosnetwork'],
     ['Youtube', 'https://www.youtube.com/c/NervosNetwork'],
   ]
-  assert.equal(links.length, 22)
+  assert.equal(links.length, 21)
   assert.deepEqual(
     links.map(link => [link.props.children[0], link.props.href]),
     destinations,
@@ -114,7 +113,6 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
       'ckb',
       'mining',
       'wallets',
-      'wiki',
       'press_kit',
       'developers_heading',
       'documentation',

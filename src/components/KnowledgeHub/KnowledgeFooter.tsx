@@ -18,7 +18,6 @@ const groups: FooterGroup[] = [
       ['CKB', '/ckbpage'],
       ['Mining', '/mining'],
       ['Wallets', '/wallets'],
-      ['Wiki', 'https://en.wikipedia.org/wiki/Nervos_Network'],
       ['Press Kit', '/media-kit'],
     ],
   },
