@@ -71,64 +71,6 @@ test('B9 rewrites only the two English landings to a fixed same-origin read-only
   }
 })
 
-test('B9 HTML GET and HEAD responses retain Accept and the framework Vary dimensions', () => {
-  const requiredDimensions = [
-    'accept',
-    'rsc',
-    'next-router-state-tree',
-    'next-router-prefetch',
-    'next-router-segment-prefetch',
-  ]
-  for (const pathname of ['/', '/en', '/knowledge-base', '/en/knowledge-base']) {
-    for (const method of ['GET', 'HEAD']) {
-      for (const accept of ['', '*/*', 'text/html', 'text/markdown;q=0', 'text/markdown,text/html']) {
-        const incoming = request(pathname, accept, method)
-        const result = middleware(incoming)
-        assert.equal(result.headers.get('x-middleware-next'), '1', `${pathname}: ${method} ${accept}`)
-        assert.equal(result.headers.get('x-middleware-rewrite'), null)
-        const dimensions = (result.headers.get('vary') ?? '')
-          .split(',')
-          .map(value => value.trim().toLowerCase())
-          .filter(Boolean)
-        for (const dimension of requiredDimensions)
-          assert.ok(dimensions.includes(dimension), `${pathname}: ${method} must vary on ${dimension}`)
-        assert.equal(new Set(dimensions).size, dimensions.length, 'Vary dimensions are not repeated')
-        assert.equal(incoming.headers.has('vary'), false, 'Vary is a response header, not a forwarded request value')
-        assert.equal(result.headers.get('x-middleware-override-headers'), null)
-        assert.equal(result.headers.get('cache-control'), null, 'HTML retains the existing static caching policy')
-      }
-    }
-  }
-})
-
-test('B9 does not attach homepage Vary to locales, Next data, unsupported methods or other routes', () => {
-  const cases = [
-    ...['/zh', '/zh/knowledge-base', '/es', '/es/knowledge-base', '/fr/knowledge-base'].map(pathname =>
-      request(pathname, 'text/html'),
-    ),
-    ...['/', '/en', '/knowledge-base', '/en/knowledge-base'].flatMap(pathname => [
-      request(pathname, 'text/html', 'POST'),
-      request(pathname, 'text/html', 'GET', { 'x-nextjs-data': '1' }),
-      request(pathname, 'text/markdown', 'GET', { 'x-nextjs-data': '1' }),
-    ]),
-    ...[
-      '/_next/data/b9-build/en.json',
-      '/_next/data/b9-build/en/knowledge-base.json',
-      '/knowledge-base/articles',
-      '/knowledge-base/what_is_fiber',
-      '/knowledge-base/start-here',
-      '/api/markdown-homepage/home',
-      '/llms.txt',
-    ].map(pathname => request(pathname, 'text/html')),
-  ]
-  for (const incoming of cases) {
-    const result = middleware(incoming)
-    assert.equal(result.headers.get('x-middleware-next'), '1', incoming.url)
-    assert.equal(result.headers.get('x-middleware-rewrite'), null, incoming.url)
-    assert.equal(result.headers.get('vary'), null, incoming.url)
-  }
-})
-
 test('B9 preserves browser HTML, excluded locales, methods, articles and Next data protocols', () => {
   const cases = []
   for (const pathname of ['/', '/knowledge-base']) {

@@ -44,7 +44,7 @@ const loaded = { exports: {} }
 const imports = {
   'next/server': {
     NextResponse: {
-      next: () => Object.defineProperty({ kind: 'next' }, 'headers', { value: new Headers() }),
+      next: () => ({ kind: 'next' }),
       redirect: (url, status) => ({ kind: 'redirect', location: url.href, status }),
     },
   },

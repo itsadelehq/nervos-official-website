@@ -13,7 +13,7 @@
     "indexnow:manifest": "node scripts/indexnow-manifest.mjs",
     "indexnow:plan": "node scripts/indexnow-plan.mjs",
     "indexnow:deploy": "node scripts/indexnow-deploy.mjs",
-    "build": "node scripts/resolve-kb-content.mjs && node scripts/validate-kb-sources.mjs && node scripts/prepare-kb-content.mjs && node scripts/test-kb-content.mjs && node ./scripts/generate-articles.mjs && node scripts/generate-sitemap.mjs && node scripts/indexnow-manifest.mjs && next build && node scripts/verify-kb-content-release.mjs",
+    "build": "node scripts/resolve-kb-content.mjs && node scripts/validate-kb-sources.mjs && node scripts/prepare-kb-content.mjs && node scripts/test-kb-content.mjs && node ./scripts/generate-articles.mjs && node scripts/generate-sitemap.mjs && node scripts/indexnow-manifest.mjs && next build && node scripts/finalize-markdown-vary.mjs && node scripts/verify-kb-content-release.mjs",
     "dev": "node scripts/resolve-kb-content.mjs && node scripts/validate-kb-sources.mjs && node scripts/prepare-kb-content.mjs && node scripts/test-kb-content.mjs && node scripts/generate-sitemap.mjs && node scripts/indexnow-manifest.mjs && next dev",
     "lint": "next lint",
     "start": "next start",

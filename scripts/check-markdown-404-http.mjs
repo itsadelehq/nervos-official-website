@@ -62,7 +62,18 @@ async function checkNotFound(pathname, accept, method = 'GET') {
   checked++
 }
 
-for (const pathname of [
+async function checkPathGroups(groups, verify) {
+  // Different paths can run together, but never overlap requests for the same
+  // path: the Accept/HEAD sequence within each group is the cache regression.
+  for (let offset = 0; offset < groups.length; offset += 4) {
+    const results = await Promise.allSettled(groups.slice(offset, offset + 4).map(verify))
+    for (const result of results) {
+      if (result.status === 'rejected') throw result.reason
+    }
+  }
+}
+
+const warmPaths = [
   '/b8-page-does-not-exist',
   '/zh/b8-page-does-not-exist',
   '/knowledge-base/b8-article-does-not-exist',
@@ -70,13 +81,15 @@ for (const pathname of [
   '/knowledge-base/articles?page=999999',
   '/zh/knowledge-base/articles?page=999999',
   '/knowledge-base/topic/b8-topic-does-not-exist',
-]) {
+]
+await checkPathGroups(warmPaths, async pathname => {
   // Retain the original seven route/error cases as warm-cache regressions.
   for (const accept of ['text/markdown', 'text/html', 'text/markdown', '*/*', 'text/markdown;q=0']) {
     await checkNotFound(pathname, accept)
   }
   await checkNotFound(pathname, 'text/markdown', 'HEAD')
-}
+  console.log(`${pathname}: 6 passed (${checked} checked)`)
+})
 
 // Fresh pathnames, rather than cache-busting query values, exercise Vercel's
 // route-level negative cache. Each scenario gets a distinct first request.
@@ -86,16 +99,20 @@ const coldRoutes = [
   suffix => `/knowledge-base/b8-cold-article-${suffix}`,
   suffix => `/zh/knowledge-base/b8-cold-article-${suffix}`,
 ]
-for (const [index, route] of coldRoutes.entries()) {
-  for (const first of ['text/markdown', 'text/html']) {
+const coldGroups = coldRoutes.flatMap((route, index) =>
+  ['text/markdown', 'text/html'].map(first => {
     const other = first === 'text/markdown' ? 'text/html' : 'text/markdown'
     const pathname = route(`${runId}-${index}-${first === 'text/markdown' ? 'md-first' : 'html-first'}`)
-    for (const accept of [first, other, first, other, first]) await checkNotFound(pathname, accept)
-    await checkNotFound(pathname, 'text/markdown', 'HEAD')
-    await checkNotFound(pathname, 'text/html', 'HEAD')
-    await checkNotFound(pathname, 'text/markdown')
-  }
-}
+    return { pathname, first, other }
+  }),
+)
+await checkPathGroups(coldGroups, async ({ pathname, first, other }) => {
+  for (const accept of [first, other, first, other, first]) await checkNotFound(pathname, accept)
+  await checkNotFound(pathname, 'text/markdown', 'HEAD')
+  await checkNotFound(pathname, 'text/html', 'HEAD')
+  await checkNotFound(pathname, 'text/markdown')
+  console.log(`${pathname}: 8 passed (${checked} checked)`)
+})
 
 for (const pathname of ['/', '/knowledge-base', '/knowledge-base/articles', article.canonicalPath]) {
   const accept = pathname === '/' || pathname === '/knowledge-base' ? 'text/html' : 'text/markdown'

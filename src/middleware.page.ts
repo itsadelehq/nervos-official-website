@@ -158,17 +158,7 @@ export function middleware(request: NextRequest) {
     )
     return NextResponse.rewrite(destination)
   }
-  const response = NextResponse.next()
-  if (englishHomepage) {
-    // Vercel's prerender initialHeaders replace next.config's Vary with the
-    // RSC dimensions. Set the response header at middleware delivery instead,
-    // retaining those framework dimensions as well as our Accept negotiation.
-    response.headers.set(
-      'Vary',
-      'Accept, rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch',
-    )
-  }
-  return response
+  return NextResponse.next()
 }
 
 // Next 14 appends an optional .json group to middleware matchers. A bare

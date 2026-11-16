@@ -44,7 +44,7 @@ const { KB_HUBS, resolveKBHub, kbHubPath } = hubModule
 const { hubDestination, middleware, requestPagePath } = loadTypeScript('src/middleware.page.ts', {
   'next/server': {
     NextResponse: {
-      next: () => Object.defineProperty({ kind: 'next' }, 'headers', { value: new Headers() }),
+      next: () => ({ kind: 'next' }),
       redirect: (url, status) => ({ kind: 'redirect', location: url.href, status }),
     },
   },
