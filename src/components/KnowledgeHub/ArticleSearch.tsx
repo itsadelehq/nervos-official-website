@@ -21,21 +21,24 @@ export function ArticleSearch({
   initialQuery = '',
   placement = 'archive',
   resultsCount,
+  language = 'en',
 }: {
   initialQuery?: string
   placement?: 'archive' | 'search'
   resultsCount?: number
+  language?: string
 } = {}) {
   const router = useRouter()
+  const chinese = language === 'zh'
   const [query, setQuery] = useState(initialQuery)
   const [showSearch, setShowSearch] = useState(false)
   const [matches, setMatches] = useState<KBArticle[]>([])
-  const [searchStatus, setSearchStatus] = useState('Searching…')
+  const [searchStatus, setSearchStatus] = useState(chinese ? '搜索中…' : 'Searching…')
 
   useEffect(() => {
     const controller = new AbortController()
     setMatches([])
-    setSearchStatus('Searching…')
+    setSearchStatus(chinese ? '搜索中…' : 'Searching…')
     if (!showSearch || !query.trim()) return
     const timer = setTimeout(() => {
       void fetch(`/api/kb-search?q=${encodeURIComponent(query)}&locale=${encodeURIComponent(router.locale ?? 'en')}`, {
@@ -48,17 +51,24 @@ export function ArticleSearch({
         .then(items => {
           if (controller.signal.aborted) return
           setMatches(items)
-          setSearchStatus(items.length ? '' : `No results for '${query.trim()}'. Try adjusting your search terms.`)
+          setSearchStatus(
+            items.length
+              ? ''
+              : chinese
+                ? `未找到“${query.trim()}”的搜索结果，请尝试其他关键词。`
+                : `No results for '${query.trim()}'. Try adjusting your search terms.`,
+          )
         })
         .catch(() => {
-          if (!controller.signal.aborted) setSearchStatus('Search unavailable. Please try again.')
+          if (!controller.signal.aborted)
+            setSearchStatus(chinese ? '搜索暂不可用，请重试。' : 'Search unavailable. Please try again.')
         })
     }, 200)
     return () => {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [query, router.locale, showSearch])
+  }, [query, router.locale, showSearch, chinese])
 
   return (
     <div
@@ -92,8 +102,8 @@ export function ArticleSearch({
       >
         <input
           type="search"
-          aria-label="Search articles"
-          placeholder="Search all articles"
+          aria-label={chinese ? '搜索文章' : 'Search articles'}
+          placeholder={chinese ? '搜索全部文章' : 'Search all articles'}
           maxLength={200}
           value={query}
           onFocus={() => setShowSearch(true)}
@@ -106,7 +116,7 @@ export function ArticleSearch({
           <button
             type="button"
             className={styles.clearSearch}
-            aria-label="Clear search"
+            aria-label={chinese ? '清除搜索' : 'Clear search'}
             onClick={event => {
               setQuery('')
               setShowSearch(true)
@@ -116,20 +126,24 @@ export function ArticleSearch({
             <SearchCloseIcon />
           </button>
         )}
-        <button aria-label="Search">
+        <button aria-label={chinese ? '搜索' : 'Search'}>
           <Icon name="popular-img9026843MagnifyingGlassThinIcon1" />
         </button>
       </form>
       {showSearch && (
         <div className={styles.searchResults}>
           <div className={styles.searchCaption}>
-            Search results
-            <button type="button" onClick={() => setShowSearch(false)} aria-label="Close search results">
+            {chinese ? '搜索结果' : 'Search results'}
+            <button
+              type="button"
+              onClick={() => setShowSearch(false)}
+              aria-label={chinese ? '关闭搜索结果' : 'Close search results'}
+            >
               <SearchCloseIcon />
             </button>
           </div>
           {!query.trim() ? (
-            <p role="status">Enter a search term.</p>
+            <p role="status">{chinese ? '请输入搜索关键词。' : 'Enter a search term.'}</p>
           ) : matches.length ? (
             matches.map((article, index) => (
               <ArticleLanguageLink
@@ -156,7 +170,7 @@ export function ArticleSearch({
               href={`/knowledge-base/search?q=${encodeURIComponent(query)}`}
               onClick={() => trackKBSearch(query, `${placement}_all_search_results`, router.locale)}
             >
-              View all results →
+              {chinese ? '查看全部结果 →' : 'View all results →'}
             </Link>
           )}
         </div>

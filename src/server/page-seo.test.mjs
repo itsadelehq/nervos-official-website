@@ -247,6 +247,7 @@ test('untranslated KB landing templates remain English and Hub canonicals use th
         canonical: `${origin}${route}`,
         language: 'en',
         alternates: alternatives(route, ['en']),
+        structuredData: structuredData.kbCollectionStructuredData(route, `${origin}${route}`, props),
       })
       assert.equal(JSON.stringify(props), before)
     }
@@ -256,6 +257,9 @@ test('untranslated KB landing templates remain English and Hub canonicals use th
         canonical: `${origin}${route}`,
         language: 'en',
         alternates: alternatives(route, ['en']),
+        structuredData: structuredData.kbCollectionStructuredData('/knowledge-base/topic', `${origin}${route}`, {
+          hubId,
+        }),
       })
     }
     assert.deepEqual(seo.getPageSEO('/knowledge-base/search', requested), {

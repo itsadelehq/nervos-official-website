@@ -96,12 +96,6 @@ const config = {
     return config
   },
   redirects: async () => {
-    const ARCHIVE_URL = 'https://archive.nervos.org'
-    const archivedPages = ['/blog', '/blog/:slug', '/trailblazer', '/developer/grants', '/godwoken'].map(source => ({
-      source,
-      destination: `${ARCHIVE_URL}${source}`,
-      permanent: false,
-    }))
     const roadmap = {
       source: `/about/roadmap`,
       destination: `/journey`,
@@ -113,9 +107,15 @@ const config = {
       locale: false,
       permanent: true,
     }))
-    return [...currentKBLegacyRedirects(i18nConfig.i18n), ...archivedPages, roadmap, ...ckbAliases]
+    return [...currentKBLegacyRedirects(i18nConfig.i18n), roadmap, ...ckbAliases]
   },
   headers: async () => [
+    // Both HTML and Markdown representations negotiate on the same URL.
+    // Keep Next's locale matching, including its internal default /en prefix.
+    ...['/', '/knowledge-base'].map(source => ({
+      source,
+      headers: [{ key: 'Vary', value: 'Accept' }],
+    })),
     ...[INDEXNOW_MANIFEST_PATH, INDEXNOW_RELEASE_PATH].map(source => ({
       source,
       locale: false,

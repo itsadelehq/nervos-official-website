@@ -88,9 +88,13 @@ export const OpenGraph: FC<{ properties: OGProperties }> = ({ properties }) => {
   return (
     <Head>
       <meta name="description" content={description} key="description" />
-      {ogTags.map(([key, value]) => (
-        <meta key={key} property={key} content={value} />
-      ))}
+      {ogTags.map(([key, value]) =>
+        key.startsWith('twitter:') ? (
+          <meta key={key} name={key} content={value} />
+        ) : (
+          <meta key={key} property={key} content={value} />
+        ),
+      )}
     </Head>
   )
 }

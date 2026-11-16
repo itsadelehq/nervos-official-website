@@ -1,4 +1,4 @@
-import type { KBArticle } from '../components/KnowledgeHub/content'
+import type { KBArticle, KBCatalog } from '../components/KnowledgeHub/content'
 import { kbHubPath, resolveKBHub } from '../utils/kb-hubs'
 import { metaDescription } from '../utils/meta-description'
 import { PRODUCTION_SITE_ORIGIN, sharingImageUrl } from '../utils/sharing-urls'
@@ -50,6 +50,65 @@ export function homepageStructuredData(): StructuredDataNode[] {
       url: `${PRODUCTION_SITE_ORIGIN}/`,
       name: 'Nervos Network',
       publisher: { '@id': organizationId },
+    },
+  ]
+}
+
+type CollectionPageData = {
+  hubId?: string
+  catalog?: Pick<KBCatalog, 'hubs'>
+}
+
+// Only the existing English KB landing pages are collections. Keep this
+// separate from Article metadata and never infer a collection from an unknown
+// path, legacy selector, translated alias, or unvalidated topic identifier.
+export function kbCollectionStructuredData(
+  route: string,
+  canonical: string,
+  { hubId, catalog }: CollectionPageData = {},
+): StructuredDataNode[] {
+  let pathname: string
+  let name: string
+  if (route === '/knowledge-base') {
+    pathname = route
+    name = 'Knowledge Base'
+  } else if (route === '/knowledge-base/start-here') {
+    pathname = route
+    name = 'Start Here'
+  } else if (route === '/knowledge-base/topic') {
+    const hub = resolveKBHub(hubId)
+    if (!hub || hub.id !== hubId) return []
+    pathname = kbHubPath(hub.id)
+    name = catalog?.hubs?.find(item => item.id === hub.id)?.heading?.trim() || hub.name
+  } else {
+    return []
+  }
+  if (canonical !== `${PRODUCTION_SITE_ORIGIN}${pathname}`) return []
+
+  const breadcrumbs: StructuredDataNode[] = [
+    { '@type': 'ListItem', position: 1, name: 'Nervos Network', item: `${PRODUCTION_SITE_ORIGIN}/` },
+    { '@type': 'ListItem', position: 2, name: 'Knowledge Base', item: `${PRODUCTION_SITE_ORIGIN}/knowledge-base` },
+  ]
+  if (pathname !== '/knowledge-base') {
+    breadcrumbs.push({ '@type': 'ListItem', position: 3, name, item: canonical })
+  }
+  const breadcrumbId = `${canonical}#breadcrumb`
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      '@id': `${canonical}#collection`,
+      url: canonical,
+      name,
+      inLanguage: 'en',
+      isPartOf: { '@id': `${PRODUCTION_SITE_ORIGIN}/#website` },
+      breadcrumb: { '@id': breadcrumbId },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      '@id': breadcrumbId,
+      itemListElement: breadcrumbs,
     },
   ]
 }
