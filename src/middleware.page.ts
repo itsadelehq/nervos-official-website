@@ -99,6 +99,26 @@ export function migratedAssetPath(pathname: string): string | null {
   return target ? `${assetPrefix}${encodeURIComponent(target)}/${rest.join('/')}` : null
 }
 
+// Only the blocking article route needs an early missing-page decision.
+// SSR archive/search/topic pages determine their own query-dependent 404s.
+export function missingKBArticlePath(pathname: string, locale = 'en', now = Date.now()): boolean {
+  const segment = /^\/knowledge-base\/([^/]+)$/.exec(pathname)?.[1]
+  if (!segment || ['articles', 'search', 'start-here', 'topic'].includes(segment)) return false
+  let id: string
+  try {
+    id = decodeURIComponent(segment)
+  } catch {
+    return true
+  }
+  id = renamedFolders.get(id) ?? id
+  const versions = catalog.articles.filter(article => article.id === id)
+  // A missing translation still redirects to published English. An existing
+  // draft/future translation stays unavailable, matching articleStaticProps.
+  const article =
+    versions.find(article => article.language === locale) ?? versions.find(article => article.language === 'en')
+  return !article || article.draft || Boolean(article.date && !(Date.parse(article.date) <= now))
+}
+
 export function middleware(request: NextRequest) {
   // Vercel prefixes canonical English requests with /en before middleware.
   // The raw URL cannot distinguish that internal rewrite from a public alias;
@@ -121,21 +141,34 @@ export function middleware(request: NextRequest) {
   // browser rendering intact, and never turn a client-navigation JSON request
   // into Markdown even when requestPagePath resolves it to a landing page.
   const pathname = request.nextUrl.pathname
-  if (
+  const isPageRead =
     (request.method === 'GET' || request.method === 'HEAD') &&
-    request.nextUrl.locale === 'en' &&
     !request.headers.has('x-nextjs-data') &&
-    !pathname.startsWith('/_next/') &&
-    (pathname === '/' || pathname === '/knowledge-base') &&
-    prefersMarkdown(request.headers.get('accept') ?? undefined)
-  ) {
+    !pathname.startsWith('/_next/')
+  const markdown = prefersMarkdown(request.headers.get('accept') ?? undefined)
+  if (isPageRead && markdown && missingKBArticlePath(pathname, request.nextUrl.locale)) {
+    return NextResponse.rewrite(new URL('/api/markdown-not-found', request.url))
+  }
+  const englishHomepage =
+    isPageRead && request.nextUrl.locale === 'en' && (pathname === '/' || pathname === '/knowledge-base')
+  if (englishHomepage && markdown) {
     const destination = new URL(
       pathname === '/' ? '/api/markdown-homepage/home' : '/api/markdown-homepage/knowledge-base',
       request.url,
     )
     return NextResponse.rewrite(destination)
   }
-  return NextResponse.next()
+  const response = NextResponse.next()
+  if (englishHomepage) {
+    // Vercel's prerender initialHeaders replace next.config's Vary with the
+    // RSC dimensions. Set the response header at middleware delivery instead,
+    // retaining those framework dimensions as well as our Accept negotiation.
+    response.headers.set(
+      'Vary',
+      'Accept, rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch',
+    )
+  }
+  return response
 }
 
 // Next 14 appends an optional .json group to middleware matchers. A bare

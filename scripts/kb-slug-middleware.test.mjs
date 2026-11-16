@@ -43,7 +43,7 @@ const compiled = ts.transpileModule(fs.readFileSync('src/middleware.page.ts', 'u
 function loadMiddleware(
   articles = catalog.articles,
   response = {
-    next: () => ({ kind: 'next' }),
+    next: () => Object.defineProperty({ kind: 'next' }, 'headers', { value: new Headers() }),
     redirect: (url, status) => ({ kind: 'redirect', location: url.href, status }),
   },
 ) {
