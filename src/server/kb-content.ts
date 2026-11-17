@@ -123,6 +123,11 @@ export function resolveKBArticleId(id: string): string {
   }
   return migrations.renames.find(rename => rename.from === id)?.to ?? id
 }
+// A single-article representation must not read every other article body.
+export function getKBArticleMetadata(id: string, language = 'en'): KBArticle | null {
+  const article = source().articles.find(a => a.id === id && a.language === language)
+  return article && isPublished(article) ? article : null
+}
 export function getKBArticle(id: string, language = 'en') {
   const article = source().articles.find(a => a.id === id && a.language === language)
   return article && isPublished(article) ? markdown(article) : null

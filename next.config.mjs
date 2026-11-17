@@ -112,7 +112,7 @@ const config = {
   headers: async () => [
     // Both HTML and Markdown representations negotiate on the same URL.
     // Keep Next's locale matching, including its internal default /en prefix.
-    ...['/', '/knowledge-base'].map(source => ({
+    ...['/', '/knowledge-base', '/knowledge-base/:slug'].map(source => ({
       source,
       headers: [{ key: 'Vary', value: 'Accept' }],
     })),
@@ -133,6 +133,10 @@ const config = {
       source: '/llms.txt',
       // Next internally prefixes the root request with the default locale.
       // Keep its normal header matching so this public file gets the header.
+      headers: [{ key: 'Content-Type', value: 'text/plain; charset=utf-8' }],
+    },
+    {
+      source: '/llms-full.txt',
       headers: [{ key: 'Content-Type', value: 'text/plain; charset=utf-8' }],
     },
     {

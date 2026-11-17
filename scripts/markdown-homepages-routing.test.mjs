@@ -85,7 +85,6 @@ test('B9 preserves browser HTML, excluded locales, methods, articles and Next da
     '/_next/data/b9-build/en.json',
     '/_next/data/b9-build/en/knowledge-base.json',
     '/knowledge-base/articles',
-    '/knowledge-base/what_is_fiber',
     '/knowledge-base/start-here',
     '/api/markdown-homepage',
     '/llms.txt',

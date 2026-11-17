@@ -63,7 +63,7 @@ function assertNext(result, message) {
   assert.equal(result.headers.get('location'), null, message)
 }
 
-test('B8 leaves every published catalog article and absent-translation fallback to its existing route', () => {
+test('published renditions and missing translations use the article representation rather than the B8 missing-page API', () => {
   const now = Date.parse('2026-11-16T00:00:00Z')
   let published = 0
   let translationFallbacks = 0
@@ -74,18 +74,39 @@ test('B8 leaves every published catalog article and absent-translation fallback 
       missingKBArticlePath(`/knowledge-base/${encodeURIComponent(article.id)}`, article.language, now),
       false,
     )
-    assertNext(middleware(request(encodeURI(article.canonicalPath))), article.canonicalPath)
+    assertNext(middleware(request(encodeURI(article.canonicalPath), { accept: 'text/html' })), article.canonicalPath)
+    assert.equal(
+      middleware(request(encodeURI(article.canonicalPath))).headers.get('x-middleware-rewrite'),
+      `https://www.nervos.org/api/markdown-article/${article.language}/${encodeURIComponent(article.id)}`,
+    )
     if (article.language !== 'en') continue
     for (const locale of i18n.locales.filter(locale => locale !== 'en')) {
       if (catalog.articles.some(version => version.id === article.id && version.language === locale)) continue
       translationFallbacks++
       const path = `/${locale}/knowledge-base/${encodeURIComponent(article.id)}`
       assert.equal(missingKBArticlePath(`/knowledge-base/${encodeURIComponent(article.id)}`, locale, now), false, path)
-      assertNext(middleware(request(path)), `${path}: English fallback must remain a page redirect`)
+      assertNext(middleware(request(path, { accept: 'text/html' })), `${path}: English fallback keeps its HTML route`)
+      assert.equal(
+        middleware(request(path)).headers.get('x-middleware-rewrite'),
+        `https://www.nervos.org/api/markdown-article/${locale}/${encodeURIComponent(article.id)}`,
+        `${path}: the article handler retains the missing-translation redirect`,
+      )
     }
   }
   assert.ok(published > 0, 'The real catalog must exercise published articles')
   assert.ok(translationFallbacks > 0, 'The real catalog must exercise missing translations')
+})
+
+test('article rewrites overwrite caller-supplied identity headers with the actual locale and ID', () => {
+  const id = catalog.articles.find(article => article.language === 'zh' && !article.draft).id
+  const result = middleware(
+    request(`/zh/knowledge-base/${encodeURIComponent(id)}?language=en&slug=other`, {
+      headers: { 'x-kb-markdown-language': 'en', 'x-kb-markdown-id': 'other' },
+    }),
+  )
+  assert.equal(result.headers.get('x-middleware-request-x-kb-markdown-language'), 'zh')
+  assert.equal(result.headers.get('x-middleware-request-x-kb-markdown-id'), encodeURIComponent(id))
+  assert.equal(result.headers.get('x-kb-markdown-language'), null, 'Internal identity is not a public response header')
 })
 
 const fixtureID = 'markdown-404-routing-fixture'

@@ -46,7 +46,12 @@ test('llms.txt links only to unique, absolute official HTTPS resources', () => {
 test('llms.txt website links identify published canonical pages rather than legacy aliases', () => {
   const canonical = new Set(loadSitemapEntries().map(entry => entry.loc))
   for (const { href } of links) {
-    if (href === 'https://docs.nervos.org/' || href === 'https://www.nervos.org/sitemap.xml') continue
+    if (
+      href === 'https://docs.nervos.org/' ||
+      href === 'https://www.nervos.org/sitemap.xml' ||
+      href === 'https://www.nervos.org/llms-full.txt'
+    )
+      continue
     assert.ok(canonical.has(href), `Resource is missing from the published canonical sitemap: ${href}`)
   }
 })
