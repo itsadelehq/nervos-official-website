@@ -94,20 +94,21 @@ for (const route of ['/', '/knowledge-base']) {
   assert.ok(JSON.parse(body).pageProps)
   checked++
 }
-for (const pathname of [
-  '/zh',
-  '/zh/knowledge-base',
-  '/es',
-  '/es/knowledge-base',
-  '/knowledge-base/articles',
-  article.canonicalPath,
-]) {
+for (const pathname of ['/zh', '/zh/knowledge-base', '/es', '/es/knowledge-base', '/knowledge-base/articles']) {
   const { response, body } = await request(pathname, 'text/markdown')
   assert.equal(response.status, 200, pathname)
   assert.match(response.headers.get('content-type') ?? '', /^text\/html/)
   assert.match(body, /<html/i)
   checked++
 }
+// Article Markdown has its own protocol suite. Keep this suite's published
+// article control as an ordinary browser visit rather than expecting HTML
+// when that same URL explicitly requests its Markdown representation.
+const { response: articlePage, body: articleHtml } = await request(article.canonicalPath, 'text/html')
+assert.equal(articlePage.status, 200, article.canonicalPath)
+assert.match(articlePage.headers.get('content-type') ?? '', /^text\/html/)
+assert.match(articleHtml, /<html/i)
+checked++
 for (const [path, target] of [
   ['/knowledge-base?page=2&utm_source=b9', '/knowledge-base/articles?utm_source=b9'],
   ['/knowledge-base?sort_by=popular&utm_source=b9', '/knowledge-base?utm_source=b9'],

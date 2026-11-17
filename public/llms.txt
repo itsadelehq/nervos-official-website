@@ -58,3 +58,4 @@ Most Knowledge Base articles are also available in Chinese at /zh/knowledge-base
 ## Site index
 
 - [Sitemap](https://www.nervos.org/sitemap.xml): The build-generated index of published canonical pages and available article translations.
+- [Full English article text](https://www.nervos.org/llms-full.txt): Complete text of the published English Knowledge Base articles in one file.

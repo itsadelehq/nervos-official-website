@@ -22,6 +22,7 @@
 /.next-kb-validation/
 /out/
 /public/sitemap.xml
+/public/llms-full.txt
 /public/indexnow-manifest.json
 /public/indexnow-release.json
 /public/kb-content-release.json

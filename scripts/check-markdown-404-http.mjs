@@ -115,7 +115,9 @@ await checkPathGroups(coldGroups, async ({ pathname, first, other }) => {
 })
 
 for (const pathname of ['/', '/knowledge-base', '/knowledge-base/articles', article.canonicalPath]) {
-  const accept = pathname === '/' || pathname === '/knowledge-base' ? 'text/html' : 'text/markdown'
+  // Published articles now also negotiate Markdown. Their HTML valid-route
+  // control still proves the 404 handler cannot intercept ordinary visits.
+  const accept = pathname === '/knowledge-base/articles' ? 'text/markdown' : 'text/html'
   const { response, body } = await request(pathname, accept)
   assert.equal(response.status, 200, `${pathname}: valid route stays valid`)
   assert.match(response.headers.get('content-type') ?? '', /^text\/html/)

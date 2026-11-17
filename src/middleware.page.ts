@@ -137,7 +137,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(destination, 308)
   }
 
-  // B9 applies to the two English landing URLs only. Keep SSG and ordinary
+  // B9 supports English landing URLs and actual article renditions. Keep SSG and ordinary
   // browser rendering intact, and never turn a client-navigation JSON request
   // into Markdown even when requestPagePath resolves it to a landing page.
   const pathname = request.nextUrl.pathname
@@ -157,6 +157,27 @@ export function middleware(request: NextRequest) {
       request.url,
     )
     return NextResponse.rewrite(destination)
+  }
+  if (isPageRead && markdown) {
+    const segment = /^\/knowledge-base\/([^/]+)$/.exec(pathname)?.[1]
+    if (segment && !['articles', 'search', 'start-here', 'topic'].includes(segment)) {
+      let id: string
+      try {
+        id = decodeURIComponent(segment)
+      } catch {
+        return NextResponse.rewrite(new URL('/api/markdown-not-found', request.url))
+      }
+      // Next can restore a locale-stripped public URL inside rewritten APIs.
+      // Bind these values here, overriding any caller-supplied copies. Direct
+      // API calls bind identity from their own URL instead of these headers.
+      const headers = new Headers(request.headers)
+      headers.set('x-kb-markdown-language', request.nextUrl.locale)
+      headers.set('x-kb-markdown-id', encodeURIComponent(id))
+      return NextResponse.rewrite(
+        new URL(`/api/markdown-article/${request.nextUrl.locale}/${encodeURIComponent(id)}`, request.url),
+        { request: { headers } },
+      )
+    }
   }
   return NextResponse.next()
 }
