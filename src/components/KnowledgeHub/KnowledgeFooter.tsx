@@ -19,7 +19,6 @@ const groups: FooterGroup[] = [
       ['CKB', '/ckbpage'],
       ['Mining', '/mining'],
       ['Wallets', '/wallets'],
-      ['Wiki', 'https://en.wikipedia.org/wiki/Nervos_Network'],
       ['Press Kit', '/media-kit'],
     ],
   },
@@ -30,17 +29,6 @@ const groups: FooterGroup[] = [
       ['Documentation', 'https://docs.nervos.org/'],
       ['Github', 'https://github.com/nervosnetwork/'],
       ['Explorer', 'https://explorer.nervos.org/'],
-    ],
-  },
-  {
-    title: 'Ecosystem',
-    href: 'https://ckbdapps.com/ecosystem',
-    links: [
-      ['Nervos Foundation', '/foundation'],
-      ['Cryptape', 'https://cryptape.com/'],
-      ['Godwoken', 'https://godwoken.com/'],
-      ['Nervina Labs', 'https://nervina.io/'],
-      ['Tunnel Vision Labs', 'https://tunnelvisionlabs.xyz/'],
     ],
   },
   {
@@ -57,8 +45,6 @@ const groups: FooterGroup[] = [
     href: '/learn',
     links: [
       ['Knowledge Base', '/knowledge-base'],
-      ['Medium', 'https://medium.com/nervosnetwork'],
-      ['Youtube', 'https://www.youtube.com/c/NervosNetwork'],
     ],
   },
 ]
@@ -84,12 +70,10 @@ const footerResources: Record<string, string> = {
 const chineseLabels: Record<string, string> = {
   Discover: '探索',
   Developers: '开发者',
-  Ecosystem: '生态系统',
   Community: '社区',
   Learn: '学习',
   Mining: '挖矿',
   Wallets: '钱包',
-  Wiki: '维基',
   'Press Kit': '媒体资料',
   Documentation: '开发文档',
   Explorer: '区块浏览器',
@@ -140,7 +124,7 @@ export function KnowledgeFooter() {
                     }
                   >
                     {labelFor(group.title)}
-                    <FooterArrow kind={group.title === 'Ecosystem' ? 'heading-external' : 'chevron'} />
+                    <FooterArrow kind="chevron" />
                   </Link>
                 ) : (
                   labelFor(group.title)
