@@ -94,19 +94,24 @@ export function Breadcrumb({
   current,
   revision = false,
   parents = [],
+  language = 'en',
 }: {
   current: string
   revision?: boolean
   parents?: { label: string; href: string; ctaId: string }[]
+  language?: string
 }) {
   return (
-    <nav className={revision ? revisedStyles.breadcrumb : styles.breadcrumb} aria-label="Breadcrumb">
+    <nav
+      className={revision ? revisedStyles.breadcrumb : styles.breadcrumb}
+      aria-label={language === 'zh' ? '面包屑导航' : 'Breadcrumb'}
+    >
       <Link
         href="/knowledge-base"
         locale="en"
         onClick={() => trackKBEvent('kb_cta_click', { cta_id: 'kb_home', placement: 'breadcrumb' })}
       >
-        Knowledge Base
+        {language === 'zh' ? '知识库' : 'Knowledge Base'}
       </Link>
       {parents.map(parent => (
         <span key={parent.href}>

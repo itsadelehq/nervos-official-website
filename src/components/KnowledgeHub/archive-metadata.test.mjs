@@ -59,11 +59,14 @@ function loadArchive(source) {
 const current = loadArchive(currentSource)
 const content = loadSource(fs.readFileSync(path.join(root, 'src/components/KnowledgeHub/content.ts'), 'utf8'))
 const source = loadSource(fs.readFileSync(path.join(root, 'src/server/kb-content.ts'), 'utf8'))
-const { libraryProps } = loadSource(fs.readFileSync(path.join(root, 'src/server/kb-page.ts'), 'utf8'), {
-  './kb-content': source,
-  '../components/KnowledgeHub/content': content,
-  'next-i18next/serverSideTranslations': { serverSideTranslations: async () => ({}) },
-})
+const { libraryProps, archiveAlternates } = loadSource(
+  fs.readFileSync(path.join(root, 'src/server/kb-page.ts'), 'utf8'),
+  {
+    './kb-content': source,
+    '../components/KnowledgeHub/content': content,
+    'next-i18next/serverSideTranslations': { serverSideTranslations: async () => ({}) },
+  },
+)
 
 function archiveProps(language, page = 1) {
   const articles = catalog.articles
@@ -93,7 +96,22 @@ test('archive page 1 retains its title and clean self-canonical; subsequent real
       assert.ok(props.catalog.articles.length > 0)
       const tree = current.ArticleArchive(props)
       assert.equal(tree.type, 'PreviewPage')
-      assert.equal(tree.props.title, page === 1 ? 'All articles' : `All articles — Page ${page}`)
+      assert.equal(
+        tree.props.title,
+        language === 'zh'
+          ? page === 1
+            ? '全部文章'
+            : `全部文章 — 第 ${page} 页`
+          : page === 1
+            ? 'All articles'
+            : `All articles — Page ${page}`,
+      )
+      assert.equal(
+        tree.props.description,
+        language === 'zh'
+          ? `探索知识库中的各类文章。第 ${page} 页。`
+          : `Explore articles from across the Knowledge Base. Page ${page}.`,
+      )
       assert.equal(tree.props.canonicalPath, `${prefix}/knowledge-base/articles${page > 1 ? `?page=${page}` : ''}`)
       const canonical = new URL(tree.props.canonicalPath, 'https://www.nervos.org')
       assert.deepEqual([...canonical.searchParams], page > 1 ? [['page', String(page)]] : [])
@@ -118,7 +136,7 @@ test('empty untranslated archive locales refer to English without inventing a lo
   }
 })
 
-test('archive copy, H1, article order and pagination are unchanged by layout updates', () => {
+test('archive localizes Chinese generic copy without changing article order, layout controls or pagination', () => {
   for (const language of ['en', 'zh', 'es', 'fr']) {
     const total = archiveProps(language).total
     for (const page of new Set([1, ...(total ? [2, Math.ceil(total / 24)] : [])])) {
@@ -126,13 +144,16 @@ test('archive copy, H1, article order and pagination are unchanged by layout upd
       const tree = current.ArticleArchive(props)
       assert.ok(
         nodes(tree).some(
-          node => node.type === 'p' && node.props.children === 'Explore articles from across the Knowledge Base.',
+          node =>
+            node.type === 'p' &&
+            node.props.children ===
+              (language === 'zh' ? '探索知识库中的各类文章。' : 'Explore articles from across the Knowledge Base.'),
         ),
       )
       assert.equal(nodes(tree).filter(node => node.type === 'ArticleSearch').length, 1)
       const headings = nodes(tree).filter(node => node.type === 'h1')
       assert.equal(headings.length, 1)
-      assert.equal(headings[0].props.children, 'All Articles')
+      assert.equal(headings[0].props.children, language === 'zh' ? '全部文章' : 'All Articles')
       assert.equal(headings[0].props.id, 'all-articles-title')
       assert.deepEqual(
         nodes(tree)
@@ -144,9 +165,70 @@ test('archive copy, H1, article order and pagination are unchanged by layout upd
       assert.equal(pagination.props.currentPage, page)
       assert.equal(pagination.props.pageCount, Math.ceil(total / 24))
       assert.equal(pagination.props.hrefForPage(2), '/knowledge-base/articles?page=2')
+      const effectiveLanguage = props.catalog.articles[0]?.language ?? 'en'
+      assert.equal(pagination.props.language, effectiveLanguage)
+      for (const type of ['ArticleSearch', 'ArticleGridControls', 'Breadcrumb'])
+        assert.equal(nodes(tree).find(node => node.type === type).props.language, effectiveLanguage)
     }
   }
   assert.deepEqual(current.events, [], 'Rendering metadata must not trigger analytics')
+})
+
+test('archive hreflang requires identical real page contents and stays reciprocal without inventing ES pages', async () => {
+  for (const language of ['en', 'zh', 'es']) {
+    for (let page = 1; page <= Math.ceil(archiveProps(language).total / 24); page++) {
+      const result = await libraryProps('archive')({ locale: language, query: { page: String(page) } })
+      const alternates = result.props.archiveAlternates
+      const ids = result.props.catalog.articles.map(article => article.id).sort()
+      for (const alternate of alternates.filter(item => item.language !== 'x-default')) {
+        const other = archiveProps(alternate.language, page)
+        assert.deepEqual(other.catalog.articles.map(article => article.id).sort(), ids)
+        const reciprocal = await libraryProps('archive')({ locale: alternate.language, query: { page: String(page) } })
+        assert.deepEqual(reciprocal.props.archiveAlternates, alternates)
+        assert.equal(
+          alternate.url,
+          `https://www.nervos.org${alternate.language === 'en' ? '' : `/${alternate.language}`}/knowledge-base/articles${page > 1 ? `?page=${page}` : ''}`,
+        )
+      }
+      assert.equal(
+        alternates.some(item => item.language === 'x-default'),
+        alternates.some(item => item.language === 'en'),
+      )
+    }
+  }
+})
+
+test('archive equivalence responds to missing translations, moved dates, partial final pages and empty locales', () => {
+  const originals = Array.from({ length: 25 }, (_, index) => ({
+    id: String(index).padStart(2, '0'),
+    date: '2026-01-01',
+    language: 'en',
+  }))
+  const translated = originals.map(article => ({ ...article, language: 'zh' }))
+  const partial = originals.slice(0, 24).map(article => ({ ...article, language: 'es' }))
+  const articles = [...originals, ...translated, ...partial]
+  assert.deepEqual(
+    Array.from(archiveAlternates(articles, 'en', 1), item => item.language),
+    ['en', 'zh', 'es', 'x-default'],
+  )
+  assert.deepEqual(
+    Array.from(archiveAlternates(articles, 'en', 2), item => item.language),
+    ['en', 'zh', 'x-default'],
+  )
+  assert.deepEqual(Array.from(archiveAlternates(articles, 'es', 2)), [])
+  assert.deepEqual(Array.from(archiveAlternates(articles, 'fr', 1)), [])
+  const missing = articles.filter(article => article.language !== 'zh' || article.id !== '00')
+  assert.deepEqual(
+    Array.from(archiveAlternates(missing, 'en', 1), item => item.language),
+    ['en', 'es', 'x-default'],
+  )
+  const moved = articles.map(article =>
+    article.language === 'zh' && article.id === '24' ? { ...article, date: '2027-01-01' } : article,
+  )
+  assert.deepEqual(
+    Array.from(archiveAlternates(moved, 'en', 1), item => item.language),
+    ['en', 'es', 'x-default'],
+  )
 })
 
 test('the real archive loader keeps valid page data distinct and canonical metadata excludes tracking/filter keys', async () => {

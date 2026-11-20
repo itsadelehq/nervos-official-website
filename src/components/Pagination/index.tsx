@@ -11,8 +11,10 @@ const Pagination: FC<{
   className?: string
   hrefForPage?: (page: number) => string
   onPageChange?: (page: number) => void
-}> = ({ pageCount, currentPage, className, hrefForPage, onPageChange }) => {
+  language?: string
+}> = ({ pageCount, currentPage, className, hrefForPage, onPageChange, language = 'en' }) => {
   const { query, pathname } = useRouter()
+  const chinese = language === 'zh'
 
   const page = currentPage ?? Number(query.page ?? '1')
   const prev = `${page - 1}`
@@ -41,12 +43,12 @@ const Pagination: FC<{
   if (pageCount < 1) return null
 
   return (
-    <nav className={clsx(styles.container, className)} aria-label="Pagination">
+    <nav className={clsx(styles.container, className)} aria-label={chinese ? '分页导航' : 'Pagination'}>
       {+prev > 0 ? (
         <Link
           href={getHref(+prev)}
           className={styles.prev}
-          aria-label="Previous page"
+          aria-label={chinese ? '上一页' : 'Previous page'}
           onClick={() => onPageChange?.(+prev)}
         >
           <Image src="/images/left.svg" alt="" width={10} height={16} unoptimized />
@@ -58,7 +60,13 @@ const Pagination: FC<{
             …
           </span>
         ) : page === i ? (
-          <span key={i} className={styles.indicator} aria-label={`Page ${i}`} aria-current="page" data-active="true">
+          <span
+            key={i}
+            className={styles.indicator}
+            aria-label={chinese ? `第 ${i} 页` : `Page ${i}`}
+            aria-current="page"
+            data-active="true"
+          >
             {i}
           </span>
         ) : (
@@ -66,7 +74,7 @@ const Pagination: FC<{
             key={i}
             href={getHref(i)}
             className={styles.indicator}
-            aria-label={`Go to page ${i}`}
+            aria-label={chinese ? `前往第 ${i} 页` : `Go to page ${i}`}
             onClick={() => onPageChange?.(i)}
           >
             {i}
@@ -77,7 +85,7 @@ const Pagination: FC<{
         <Link
           href={getHref(+next)}
           className={styles.next}
-          aria-label="Next page"
+          aria-label={chinese ? '下一页' : 'Next page'}
           onClick={() => onPageChange?.(+next)}
         >
           <Image src="/images/left.svg" alt="" width={10} height={16} unoptimized />

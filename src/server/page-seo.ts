@@ -6,7 +6,7 @@ import { getKBArticle, getKBArticleStatus } from './kb-content'
 import i18nConfig from '../../next-i18next.config'
 import { kbHubPath } from '../utils/kb-hubs'
 import { coreNamespaces, coreLanguages } from '../../config/site-indexing.mjs'
-import { articleStructuredData, homepageStructuredData } from './structured-data'
+import { articleStructuredData, homepageStructuredData, kbCollectionStructuredData } from './structured-data'
 
 function languageSet(route: string, languages: string[]): PageSEO['alternates'] {
   const alternates = languages.map(language => ({ language, url: sharingPageUrl(route, language) }))
@@ -20,6 +20,7 @@ type PageData = {
   page?: number
   hubId?: string
   preview?: boolean
+  archiveAlternates?: PageSEO['alternates']
 }
 
 export function getPageSEO(route: string, requestedLanguage = 'en', props: PageData = {}): PageSEO {
@@ -62,18 +63,21 @@ export function getPageSEO(route: string, requestedLanguage = 'en', props: PageD
     const language = props.catalog?.articles[0]?.language ?? 'en'
     const page = props.page ?? 1
     const canonical = sharingPageUrl(`${route}${page > 1 ? `?page=${page}` : ''}`, language)
-    // Different locale archives contain different article subsets and page
-    // counts; page N is not necessarily a translation of another page N.
-    return { canonical, language, alternates: [] }
+    // The loader only pairs pages with the same published article IDs. Page N
+    // alone does not establish an equivalent page in another language.
+    return { canonical, language, alternates: props.archiveAlternates ?? [] }
   }
 
   // The redesigned landing copy is currently English only. Do not advertise
   // translated Hub/Start Here pages simply because their URL has a locale.
   const canonicalRoute = route === '/knowledge-base/topic' ? (kbHubPath(props.hubId) ?? '/knowledge-base') : route
+  const canonical = sharingPageUrl(canonicalRoute)
+  const structuredData = props.preview ? [] : kbCollectionStructuredData(route, canonical, props)
   return {
-    canonical: sharingPageUrl(canonicalRoute),
+    canonical,
     language: 'en',
     alternates: route === '/knowledge-base/search' ? [] : languageSet(canonicalRoute, ['en']),
+    ...(structuredData.length ? { structuredData } : {}),
   }
 }
 

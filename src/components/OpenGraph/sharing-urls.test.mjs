@@ -58,7 +58,7 @@ function renderPage(router, props = {}) {
   const tags = Object.fromEntries(
     nodes(OpenGraph(metadata.props))
       .filter(node => node.type === 'meta')
-      .map(node => [node.props.property, node.props.content]),
+      .map(node => [node.props.name ?? node.props.property, node.props.content]),
   )
   return { tree, tags }
 }
@@ -148,6 +148,7 @@ test('Page defaults share the current page and keep all visible children and cla
     )
     assert.equal(tags['og:url'], `https://www.nervos.org${expected}`)
     assert.equal(tags['twitter:url'], tags['og:url'])
+    assert.equal(tags['twitter:card'], 'summary_large_image')
     assert.equal(tags['og:image'], 'https://www.nervos.org/images/logo.png')
     assert.equal(tags['twitter:image'], tags['og:image'])
     assert.equal(tree.props.className, 'page existing-class')
@@ -175,6 +176,7 @@ test('existing article-specific URLs, copy, and cover stay authoritative', () =>
   )
   assert.equal(tags['og:url'], properties.url)
   assert.equal(tags['og:title'], properties.title)
+  assert.equal(tags['twitter:card'], 'summary_large_image')
   assert.equal(tags['og:description'], properties.description)
   assert.equal(tags['og:image'], `https://www.nervos.org${properties.image.url}`)
   assert.equal(tags['og:image:alt'], properties.image.alt)

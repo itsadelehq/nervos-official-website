@@ -25,7 +25,7 @@ function load(file, imports, globals = {}) {
 
 const validation = load('../../utils/newsletter.ts', { zod: require('zod') })
 
-function signup(placement, mutate = async () => ({ success: true, status: 'accepted' })) {
+function signup(placement, mutate = async () => ({ success: true, status: 'accepted' }), language = 'en') {
   const states = []
   const refs = []
   const calls = []
@@ -85,7 +85,7 @@ function signup(placement, mutate = async () => ({ success: true, status: 'accep
     render: () => {
       stateIndex = 0
       refIndex = 0
-      return invokeSignup(placement)
+      return invokeSignup(placement, language)
     },
   }
 }
@@ -137,6 +137,21 @@ test('pending submissions are disabled and duplicate clicks before rerender cann
   await pending
   assert.equal(form.render().isSubmitting, false)
   assert.equal(form.events.length, 2)
+})
+
+test('Chinese footer validates, submits and reports failures in Chinese through the unchanged signup API', async () => {
+  const accepted = signup('footer', undefined, 'zh')
+  await accepted.render().onSubmit(submission('bad-email').event)
+  assert.equal(accepted.render().status, '请输入有效的电子邮箱地址。')
+  assert.equal(accepted.calls.length, 0)
+  await accepted.render().onSubmit(submission().event)
+  assert.equal(accepted.render().status, '感谢订阅！我们已收到你的订阅请求。')
+  assert.deepEqual(accepted.calls, [{ email: 'reader@example.test' }])
+  assert.equal(accepted.events[0].data.status, 'accepted')
+  const rejected = signup('footer', async () => ({ success: false }), 'zh')
+  await rejected.render().onSubmit(submission().event)
+  assert.equal(rejected.render().status, '提交失败，请重试或联系 media@nervos.org。')
+  assert.equal(rejected.render().isError, true)
 })
 
 test('invalid input produces feedback without sending a request or analytics event', async () => {

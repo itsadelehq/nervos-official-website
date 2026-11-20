@@ -218,10 +218,11 @@ test('a stale catalog, missing source, or old migration identity fails instead o
 test('normal build and dev commands generate the snapshot before starting Next', () => {
   const { scripts } = JSON.parse(fs.readFileSync('package.json', 'utf8'))
   for (const name of ['build', 'dev']) {
-    assert(
-      scripts[name].includes('node scripts/generate-sitemap.mjs && node scripts/indexnow-manifest.mjs && next '),
-      name,
-    )
+    const sitemap = scripts[name].indexOf('node scripts/generate-sitemap.mjs')
+    const fullText = scripts[name].indexOf('node scripts/generate-llms-full.mjs')
+    const notification = scripts[name].indexOf('node scripts/indexnow-manifest.mjs')
+    const next = scripts[name].indexOf('next ')
+    assert(sitemap >= 0 && sitemap < fullText && fullText < notification && notification < next, name)
   }
   const standalone = scripts['sitemap:generate']
   assert(standalone.includes('node scripts/generate-sitemap.mjs'))

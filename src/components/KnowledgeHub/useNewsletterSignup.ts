@@ -3,7 +3,8 @@ import { api } from '../../utils/api'
 import { newsletterSignupInput } from '../../utils/newsletter'
 import { trackKBEvent } from './analytics'
 
-export function useNewsletterSignup(placement: 'signal' | 'footer') {
+export function useNewsletterSignup(placement: 'signal' | 'footer', language = 'en') {
+  const chinese = language === 'zh'
   const { mutateAsync } = api.newsLetter.signup.useMutation({ retry: false })
   const pending = useRef(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -17,7 +18,7 @@ export function useNewsletterSignup(placement: 'signal' | 'footer') {
     const form = event.currentTarget
     const input = newsletterSignupInput.safeParse({ email: new FormData(form).get('email') })
     if (!input.success) {
-      setStatus('Please enter a valid email address.')
+      setStatus(chinese ? '请输入有效的电子邮箱地址。' : 'Please enter a valid email address.')
       setIsError(true)
       setIsInvalid(true)
       return
@@ -27,17 +28,21 @@ export function useNewsletterSignup(placement: 'signal' | 'footer') {
     setIsSubmitting(true)
     setIsError(false)
     setIsInvalid(false)
-    setStatus('Submitting…')
+    setStatus(chinese ? '提交中…' : 'Submitting…')
     try {
       const result = await mutateAsync({ email: input.data.email })
       if (!result.success) throw new Error('Newsletter signup was not accepted')
-      setStatus('Thanks! Your signup request was received.')
+      setStatus(chinese ? '感谢订阅！我们已收到你的订阅请求。' : 'Thanks! Your signup request was received.')
       form.reset()
       trackKBEvent('kb_newsletter_submit', { placement, status: 'accepted' })
       trackKBEvent('kb_newsletter_result', { placement, outcome: 'accepted' })
     } catch {
       setIsError(true)
-      setStatus('Unable to submit. Please try again or contact media@nervos.org.')
+      setStatus(
+        chinese
+          ? '提交失败，请重试或联系 media@nervos.org。'
+          : 'Unable to submit. Please try again or contact media@nervos.org.',
+      )
       trackKBEvent('kb_newsletter_result', { placement, outcome: 'error' })
     } finally {
       pending.current = false

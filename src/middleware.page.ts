@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import migrations from '../public/education_hub_articles/metadata/slug-migrations.json'
 import catalog from '../public/education_hub_articles/metadata/catalog.json'
 import { kbHubPath, resolveKBHub } from './utils/kb-hubs'
+import { prefersMarkdown } from './utils/markdown-accept'
 
 const renamedFolders = new Map(migrations.renames.map(({ from, to }) => [from, to]))
 const assetPrefix = '/education_hub_articles/'
@@ -98,6 +99,26 @@ export function migratedAssetPath(pathname: string): string | null {
   return target ? `${assetPrefix}${encodeURIComponent(target)}/${rest.join('/')}` : null
 }
 
+// Only the blocking article route needs an early missing-page decision.
+// SSR archive/search/topic pages determine their own query-dependent 404s.
+export function missingKBArticlePath(pathname: string, locale = 'en', now = Date.now()): boolean {
+  const segment = /^\/knowledge-base\/([^/]+)$/.exec(pathname)?.[1]
+  if (!segment || ['articles', 'search', 'start-here', 'topic'].includes(segment)) return false
+  let id: string
+  try {
+    id = decodeURIComponent(segment)
+  } catch {
+    return true
+  }
+  id = renamedFolders.get(id) ?? id
+  const versions = catalog.articles.filter(article => article.id === id)
+  // A missing translation still redirects to published English. An existing
+  // draft/future translation stays unavailable, matching articleStaticProps.
+  const article =
+    versions.find(article => article.language === locale) ?? versions.find(article => article.language === 'en')
+  return !article || article.draft || Boolean(article.date && !(Date.parse(article.date) <= now))
+}
+
 export function middleware(request: NextRequest) {
   // Vercel prefixes canonical English requests with /en before middleware.
   // The raw URL cannot distinguish that internal rewrite from a public alias;
@@ -108,17 +129,62 @@ export function middleware(request: NextRequest) {
   if (listingDestination) return NextResponse.redirect(listingDestination, 308)
   const pagePath = requestPagePath(request)
   const migratedPath = migratedAssetPath(pagePath) ?? migratedArticlePath(pagePath, request.nextUrl.locale)
-  if (!migratedPath) return NextResponse.next()
-  const destination = new URL(request.url)
-  // Use the final full path (already locale-prefixed) and preserve the query.
-  // getStaticProps alone cannot see query parameters on incoming old URLs.
-  destination.pathname = migratedPath
-  return NextResponse.redirect(destination, 308)
+  if (migratedPath) {
+    const destination = new URL(request.url)
+    // Use the final full path (already locale-prefixed) and preserve the query.
+    // getStaticProps alone cannot see query parameters on incoming old URLs.
+    destination.pathname = migratedPath
+    return NextResponse.redirect(destination, 308)
+  }
+
+  // B9 supports English landing URLs and actual article renditions. Keep SSG and ordinary
+  // browser rendering intact, and never turn a client-navigation JSON request
+  // into Markdown even when requestPagePath resolves it to a landing page.
+  const pathname = request.nextUrl.pathname
+  const isPageRead =
+    (request.method === 'GET' || request.method === 'HEAD') &&
+    !request.headers.has('x-nextjs-data') &&
+    !pathname.startsWith('/_next/')
+  const markdown = prefersMarkdown(request.headers.get('accept') ?? undefined)
+  if (isPageRead && markdown && missingKBArticlePath(pathname, request.nextUrl.locale)) {
+    return NextResponse.rewrite(new URL('/api/markdown-not-found', request.url))
+  }
+  const englishHomepage =
+    isPageRead && request.nextUrl.locale === 'en' && (pathname === '/' || pathname === '/knowledge-base')
+  if (englishHomepage && markdown) {
+    const destination = new URL(
+      pathname === '/' ? '/api/markdown-homepage/home' : '/api/markdown-homepage/knowledge-base',
+      request.url,
+    )
+    return NextResponse.rewrite(destination)
+  }
+  if (isPageRead && markdown) {
+    const segment = /^\/knowledge-base\/([^/]+)$/.exec(pathname)?.[1]
+    if (segment && !['articles', 'search', 'start-here', 'topic'].includes(segment)) {
+      let id: string
+      try {
+        id = decodeURIComponent(segment)
+      } catch {
+        return NextResponse.rewrite(new URL('/api/markdown-not-found', request.url))
+      }
+      // Next can restore a locale-stripped public URL inside rewritten APIs.
+      // Bind these values here, overriding any caller-supplied copies. Direct
+      // API calls bind identity from their own URL instead of these headers.
+      const headers = new Headers(request.headers)
+      headers.set('x-kb-markdown-language', request.nextUrl.locale)
+      headers.set('x-kb-markdown-id', encodeURIComponent(id))
+      return NextResponse.rewrite(
+        new URL(`/api/markdown-article/${request.nextUrl.locale}/${encodeURIComponent(id)}`, request.url),
+        { request: { headers } },
+      )
+    }
+  }
+  return NextResponse.next()
 }
 
 // Next 14 appends an optional .json group to middleware matchers. A bare
 // terminal parameter would consume that group as its constraint, so use a
 // catch-all here and keep the exact single-segment check in migratedArticlePath.
 export const config = {
-  matcher: ['/education_hub_articles/:path*', '/knowledge-base/:path*'],
+  matcher: ['/', '/education_hub_articles/:path*', '/knowledge-base/:path*'],
 }

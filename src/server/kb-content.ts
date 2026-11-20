@@ -46,6 +46,13 @@ export function getKBArticleLanguages(): Record<string, string[]> {
   return languages
 }
 
+// Archive equivalence needs publication state and ordering, not Markdown bodies.
+export function getKBPublishedArticleSummaries(): Pick<KBArticle, 'id' | 'language' | 'date'>[] {
+  return source()
+    .articles.filter(isPublished)
+    .map(({ id, language, date }) => ({ id, language, date }))
+}
+
 export function getKBCatalog(language = 'en', includeText = false): KBCatalog {
   const data = source()
   const languages = publishedLanguages(data.articles)
@@ -115,6 +122,11 @@ export function resolveKBArticleId(id: string): string {
     renames: { from: string; to: string }[]
   }
   return migrations.renames.find(rename => rename.from === id)?.to ?? id
+}
+// A single-article representation must not read every other article body.
+export function getKBArticleMetadata(id: string, language = 'en'): KBArticle | null {
+  const article = source().articles.find(a => a.id === id && a.language === language)
+  return article && isPublished(article) ? article : null
 }
 export function getKBArticle(id: string, language = 'en') {
   const article = source().articles.find(a => a.id === id && a.language === language)

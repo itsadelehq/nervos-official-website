@@ -152,6 +152,95 @@ test('home uses only handoff organization details; contact, language guesses and
   }
 })
 
+test('the eight English KB landing pages render real CollectionPage and ordered BreadcrumbList metadata', () => {
+  const catalog = JSON.parse(read('public/education_hub_articles/metadata/catalog.json'))
+  const pages = [
+    { route: '/knowledge-base', pathname: '/knowledge-base', name: 'Knowledge Base' },
+    { route: '/knowledge-base/start-here', pathname: '/knowledge-base/start-here', name: 'Start Here' },
+    ...hubs.KB_HUBS.map(hub => ({
+      route: '/knowledge-base/topic',
+      pathname: hubs.kbHubPath(hub.id),
+      name: catalog.hubs.find(item => item.id === hub.id).heading,
+      hubId: hub.id,
+    })),
+  ]
+  assert.equal(pages.length, 8)
+  const before = JSON.stringify(catalog)
+  for (const { route, pathname, name, hubId } of pages) {
+    const metadata = seo.getPageSEO(route, 'zh', { catalog, hubId })
+    const canonical = `${origin}${pathname}`
+    const main = element('main', null, element('h1', null, name), element('p', null, 'Existing collection content'))
+    const document = current =>
+      renderToStaticMarkup(
+        element('html', null, element('head', null, element(PageSEO, { seo: current })), element('body', null, main)),
+      )
+    const html = document(metadata)
+    const { structuredData: _nodes, ...withoutStructuredData } = metadata
+    assert.equal(
+      html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, ''),
+      document(withoutStructuredData),
+      'Metadata must not alter the existing page markup',
+    )
+    const nodes = graphFrom(html)['@graph']
+    assert.deepEqual(
+      nodes.map(node => node['@type']),
+      ['CollectionPage', 'BreadcrumbList'],
+    )
+    const [collection, breadcrumb] = nodes
+    assert.equal(collection.name, name)
+    assert.equal(collection.url, canonical)
+    assert.equal(collection['@id'], `${canonical}#collection`)
+    assert.equal(collection.inLanguage, 'en')
+    assert.deepEqual(collection.isPartOf, { '@id': `${origin}/#website` })
+    assert.deepEqual(collection.breadcrumb, { '@id': breadcrumb['@id'] })
+    assert.equal(breadcrumb['@id'], `${canonical}#breadcrumb`)
+    const items = breadcrumb.itemListElement
+    assert.deepEqual(
+      items.map(item => item.position),
+      items.map((_, index) => index + 1),
+    )
+    assert.equal(items.length, route === '/knowledge-base' ? 2 : 3)
+    assert.equal(items[0].item, `${origin}/`)
+    assert.equal(items[1].item, `${origin}/knowledge-base`)
+    assert.equal(items.at(-1).item, canonical)
+    assert.equal(items.at(-1).name, name)
+    for (const key of ['headline', 'author', 'datePublished', 'dateModified']) {
+      assert.equal(Object.hasOwn(collection, key), false, `Collection must not fabricate ${key}`)
+    }
+    assert.doesNotMatch(JSON.stringify(nodes), /localhost|preview\.example|\?hub=|\?sort_by=/)
+  }
+  assert.equal(JSON.stringify(catalog), before, 'Structured data must not modify the content catalog')
+})
+
+test('collection metadata rejects noncanonical paths and safely serializes supplied topic headings', () => {
+  const hub = hubs.KB_HUBS[0]
+  const canonical = `${origin}${hubs.kbHubPath(hub.id)}`
+  for (const route of ['/', '/knowledge-base/articles', '/knowledge-base/search', '/zh/knowledge-base', '/unknown']) {
+    assert.deepEqual(structured.kbCollectionStructuredData(route, `${origin}${route}`), [])
+  }
+  for (const hubId of [undefined, 'unknown', hub.name]) {
+    assert.deepEqual(structured.kbCollectionStructuredData('/knowledge-base/topic', canonical, { hubId }), [])
+  }
+  for (const url of [
+    canonical.replace(origin, 'https://preview.example'),
+    `${canonical}?hub=legacy`,
+    `${canonical}#subject`,
+    canonical.replace('/knowledge-base', '/zh/knowledge-base'),
+  ]) {
+    assert.deepEqual(structured.kbCollectionStructuredData('/knowledge-base/topic', url, { hubId: hub.id }), [])
+  }
+  const attack = '</script><script>alert("unsafe")</script>'
+  const metadata = seo.getPageSEO('/knowledge-base/topic', 'en', {
+    hubId: hub.id,
+    catalog: { hubs: [{ ...hub, heading: attack }] },
+  })
+  const html = renderToStaticMarkup(element(PageSEO, { seo: metadata }))
+  assert.equal((html.match(/<script/g) ?? []).length, 1)
+  assert.equal((html.match(/<\/script>/g) ?? []).length, 1)
+  assert.doesNotMatch(html, /<script>alert/)
+  assert.equal(graphFrom(html)['@graph'][0].name, attack)
+})
+
 test('every current published rendition renders canonical Article and genuine Hub breadcrumbs without changing main markup', () => {
   const catalog = JSON.parse(read('public/education_hub_articles/metadata/catalog.json'))
   const published = catalog.articles.filter(
@@ -293,21 +382,34 @@ test('preview, unavailable renditions, non-article pages, redirects and 404s do 
     ['/knowledge-base/[slug]', { article: { ...fixtureArticle, language: 'zh' } }],
   ])
     assert.equal(Object.hasOwn(api.getPageSEO(route, 'en', props), 'structuredData'), false)
-  for (const route of [
-    '/ckbpage',
-    '/knowledge-base',
-    '/knowledge-base/search',
-    '/knowledge-base/start-here',
-    '/knowledge-base/articles',
-  ]) {
+  for (const route of ['/ckbpage', '/knowledge-base/search', '/knowledge-base/articles']) {
     assert.equal(Object.hasOwn(api.getPageSEO(route, 'en'), 'structuredData'), false)
+  }
+  for (const [route, props] of [
+    ['/knowledge-base', {}],
+    ['/knowledge-base/start-here', {}],
+    ...hubs.KB_HUBS.map(hub => ['/knowledge-base/topic', { hubId: hub.id }]),
+  ]) {
+    assert.equal(Object.hasOwn(api.getPageSEO(route, 'en', { ...props, preview: true }), 'structuredData'), false)
+    assert.equal(
+      api.getPageSEO(route, 'en', props).structuredData.some(node => node['@type'] === 'Article'),
+      false,
+    )
   }
   for (const wrapper of [api.withStaticPageSEO, api.withServerPageSEO]) {
     for (const result of [
       { notFound: true },
       { redirect: { destination: '/knowledge-base/existing', permanent: true } },
-    ])
-      assert.equal(await wrapper('/knowledge-base/[slug]', async () => result)({ locale: 'en' }), result)
+    ]) {
+      for (const route of [
+        '/knowledge-base/[slug]',
+        '/knowledge-base',
+        '/knowledge-base/start-here',
+        '/knowledge-base/topic',
+      ]) {
+        assert.equal(await wrapper(route, async () => result)({ locale: 'en' }), result)
+      }
+    }
   }
 })
 

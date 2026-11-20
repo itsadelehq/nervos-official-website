@@ -11,7 +11,7 @@ const ts = require('typescript')
 
 const directory = path.dirname(fileURLToPath(import.meta.url))
 
-function renderFooter(newsletter = {}) {
+function renderFooter(newsletter = {}, locale = 'en') {
   const events = []
   const signup = { onSubmit: () => undefined, isSubmitting: false, status: '', isError: false, ...newsletter }
   const filename = path.join(directory, 'KnowledgeFooter.tsx')
@@ -23,14 +23,16 @@ function renderFooter(newsletter = {}) {
     'react/jsx-runtime': require('react/jsx-runtime'),
     'next/link': { default: 'a' },
     'next/image': { default: 'img' },
+    'next/router': { useRouter: () => ({ locale }) },
     '../Footer/logo.svg': { default: 'svg' },
     './footer-v2.module.scss': { default: {} },
     './analytics': {
       trackKBEvent: (name, data) => events.push({ name, data: { ...data } }),
     },
     './useNewsletterSignup': {
-      useNewsletterSignup: placement => {
+      useNewsletterSignup: (placement, language) => {
         assert.equal(placement, 'footer')
+        assert.equal(language, locale)
         return signup
       },
     },
@@ -64,21 +66,14 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
     ['Documentation', 'https://docs.nervos.org/'],
     ['Github', 'https://github.com/nervosnetwork/'],
     ['Explorer', 'https://explorer.nervos.org/'],
-    ['Ecosystem', 'https://ckbdapps.com/ecosystem'],
-    ['Nervos Foundation', '/foundation'],
-    ['Cryptape', 'https://cryptape.com/'],
-    ['Nervina Labs', 'https://nervina.io/'],
-    ['Tunnel Vision Labs', 'https://tunnelvisionlabs.xyz/'],
     ['Community', '/community'],
     ['Community Fund DAO', 'https://dao.ckb.community/'],
     ['Nervos Talk Forum', 'https://talk.nervos.org/'],
     ['RFCs', 'https://github.com/nervosnetwork/rfcs/'],
     ['Learn', '/learn'],
     ['Knowledge Base', '/knowledge-base'],
-    ['Medium', 'https://medium.com/nervosnetwork'],
-    ['Youtube', 'https://www.youtube.com/c/NervosNetwork'],
   ]
-  assert.equal(links.length, 21)
+  assert.equal(links.length, 14)
   assert.deepEqual(
     links.map(link => [link.props.children[0], link.props.href]),
     destinations,
@@ -118,26 +113,69 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
       'documentation',
       'github',
       'explorer',
-      'ecosystem_heading',
-      'nervos_foundation',
-      'cryptape',
-      'nervina_labs',
-      'tunnel_vision_labs',
       'community_heading',
       'community_fund_dao',
       'nervos_talk_forum',
       'rfcs',
       'learn_heading',
       'knowledge_base',
-      'medium',
-      'youtube',
     ],
   )
   for (const event of footerEvents) {
     assert.equal(event.name, 'kb_footer_link_click')
     assert.deepEqual(Object.keys(event.data).sort(), ['group', 'link_id', 'link_text', 'link_url'])
-    assert.match(event.data.group, /^(discover|developers|ecosystem|community|learn)$/)
+    assert.match(event.data.group, /^(discover|developers|community|learn)$/)
   }
+})
+
+test('Chinese KB footer translates generic labels and newsletter copy while preserving names, destinations and event IDs', () => {
+  const english = renderFooter()
+  const chinese = renderFooter({}, 'zh')
+  const navigation = tree => nodes(tree).find(node => node.type === 'nav')
+  const enLinks = nodes(navigation(english.tree)).filter(node => node.props?.href)
+  const zhLinks = nodes(navigation(chinese.tree)).filter(node => node.props?.href)
+  assert.equal(navigation(chinese.tree).props['aria-label'], '页脚导航')
+  assert.deepEqual(
+    zhLinks.map(link => link.props.href),
+    enLinks.map(link => link.props.href),
+  )
+  const labels = zhLinks.map(link => link.props.children[0])
+  for (const label of [
+    '挖矿',
+    '钱包',
+    '媒体资料',
+    '开发者',
+    '开发文档',
+    '区块浏览器',
+    '社区',
+    '学习',
+    '知识库',
+  ])
+    assert.ok(labels.includes(label), label)
+  for (const name of ['CKB', 'Nervos Talk Forum', 'Community Fund DAO'])
+    assert.ok(labels.includes(name), name)
+  for (let index = 0; index < zhLinks.length; index++) {
+    enLinks[index].props.onClick()
+    zhLinks[index].props.onClick()
+    assert.equal(zhLinks[index].props.locale, 'en', 'Destination language policy stays unchanged')
+  }
+  assert.deepEqual(
+    chinese.events.map(event => event.data.link_id),
+    english.events.map(event => event.data.link_id),
+  )
+  assert.deepEqual(
+    chinese.events.map(event => event.data.group),
+    english.events.map(event => event.data.group),
+  )
+  assert.deepEqual(
+    chinese.events.filter(event => event.name === 'kb_footer_link_click').map(event => event.data.link_text),
+    labels,
+  )
+  const input = nodes(chinese.tree).find(node => node.type === 'input')
+  assert.equal(input.props.placeholder, '你的电子邮箱')
+  assert.equal(input.props['aria-label'], '订阅邮箱地址')
+  assert.equal(nodes(chinese.tree).find(node => node.type === 'button').props['aria-label'], '订阅通讯')
+  assert.ok(nodes(chinese.tree).some(node => node.type === 'h2' && node.props.children === '与我们一同前行。'))
 })
 
 test('footer social links include the selected network and real URL without changing destinations', () => {

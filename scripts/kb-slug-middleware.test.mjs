@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { after, test } from 'node:test'
 import ts from 'typescript'
 import { KB_HUBS } from '../config/kb-hubs.mjs'
+import markdownAccept from './fixtures/load-markdown-accept.mjs'
 
 const require = createRequire(import.meta.url)
 const { NextRequest, NextResponse } = require('next/server')
@@ -52,6 +53,7 @@ function loadMiddleware(
     '../public/education_hub_articles/metadata/slug-migrations.json': migrations,
     '../public/education_hub_articles/metadata/catalog.json': { ...catalog, articles },
     './utils/kb-hubs': hubs.exports,
+    './utils/markdown-accept': markdownAccept,
   }
   new Function('require', 'module', 'exports', compiled)(
     name => {
@@ -77,8 +79,8 @@ test('Next 14 extracts and compiles middleware matchers that reach real HTML art
   // Next mutates object matcher sources while expanding data-route patterns.
   assert.deepEqual(info.middleware.matchers, getMiddlewareMatchers(structuredClone(config.matcher), { i18n }))
   assert.deepEqual(
-    info.middleware.matchers.map(matcher => matcher.originalSource),
-    ['/education_hub_articles/:path*', '/knowledge-base/:path*'],
+    new Set(info.middleware.matchers.map(matcher => matcher.originalSource)),
+    new Set(['/', '/education_hub_articles/:path*', '/knowledge-base/:path*']),
   )
   const matches = getMiddlewareRouteMatcher(info.middleware.matchers)
   // Next's router prefixes the internally matched path with the detected or
@@ -108,7 +110,7 @@ test('Next 14 extracts and compiles middleware matchers that reach real HTML art
     '/unrelated/BFT_consensus_mechanisms',
   ]) {
     const incoming = request(pathname)
-    assert.equal(isMatched(incoming), false, pathname)
+    assert.equal(isMatched(incoming), incoming.nextUrl.pathname === '/', pathname)
     assert.deepEqual(middleware(incoming), { kind: 'next' }, pathname)
   }
   // The catch-all matcher must not broaden the handler's exact article rule.
@@ -150,7 +152,7 @@ test('all approved bare old paths use the final translated or English URL throug
 })
 
 test('new canonical addresses, previews, typo rows and unrelated/malformed IDs never enter the migration', () => {
-  assert.deepEqual(config.matcher, ['/education_hub_articles/:path*', '/knowledge-base/:path*'])
+  assert.deepEqual(new Set(config.matcher), new Set(['/', '/education_hub_articles/:path*', '/knowledge-base/:path*']))
   for (const article of catalog.articles) {
     assert.equal(migratedArticlePath(`/knowledge-base/${article.id}`, article.language), null)
     assert.deepEqual(middleware(request(encodeURI(article.canonicalPath))), { kind: 'next' })
