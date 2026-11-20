@@ -61,28 +61,19 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
     ['CKB', '/ckbpage'],
     ['Mining', '/mining'],
     ['Wallets', '/wallets'],
-    ['Wiki', 'https://en.wikipedia.org/wiki/Nervos_Network'],
     ['Press Kit', '/media-kit'],
     ['Developers', '/developers'],
     ['Documentation', 'https://docs.nervos.org/'],
     ['Github', 'https://github.com/nervosnetwork/'],
     ['Explorer', 'https://explorer.nervos.org/'],
-    ['Ecosystem', 'https://ckbdapps.com/ecosystem'],
-    ['Nervos Foundation', '/foundation'],
-    ['Cryptape', 'https://cryptape.com/'],
-    ['Godwoken', 'https://godwoken.com/'],
-    ['Nervina Labs', 'https://nervina.io/'],
-    ['Tunnel Vision Labs', 'https://tunnelvisionlabs.xyz/'],
     ['Community', '/community'],
     ['Community Fund DAO', 'https://dao.ckb.community/'],
     ['Nervos Talk Forum', 'https://talk.nervos.org/'],
     ['RFCs', 'https://github.com/nervosnetwork/rfcs/'],
     ['Learn', '/learn'],
     ['Knowledge Base', '/knowledge-base'],
-    ['Medium', 'https://medium.com/nervosnetwork'],
-    ['Youtube', 'https://www.youtube.com/c/NervosNetwork'],
   ]
-  assert.equal(links.length, 23)
+  assert.equal(links.length, 14)
   assert.deepEqual(
     links.map(link => [link.props.children[0], link.props.href]),
     destinations,
@@ -117,32 +108,23 @@ test('footer navigation emits existing IDs plus visible text and URL without cha
       'ckb',
       'mining',
       'wallets',
-      'wiki',
       'press_kit',
       'developers_heading',
       'documentation',
       'github',
       'explorer',
-      'ecosystem_heading',
-      'nervos_foundation',
-      'cryptape',
-      'godwoken',
-      'nervina_labs',
-      'tunnel_vision_labs',
       'community_heading',
       'community_fund_dao',
       'nervos_talk_forum',
       'rfcs',
       'learn_heading',
       'knowledge_base',
-      'medium',
-      'youtube',
     ],
   )
   for (const event of footerEvents) {
     assert.equal(event.name, 'kb_footer_link_click')
     assert.deepEqual(Object.keys(event.data).sort(), ['group', 'link_id', 'link_text', 'link_url'])
-    assert.match(event.data.group, /^(discover|developers|ecosystem|community|learn)$/)
+    assert.match(event.data.group, /^(discover|developers|community|learn)$/)
   }
 })
 
@@ -165,13 +147,12 @@ test('Chinese KB footer translates generic labels and newsletter copy while pres
     '开发者',
     '开发文档',
     '区块浏览器',
-    '生态系统',
     '社区',
     '学习',
     '知识库',
   ])
     assert.ok(labels.includes(label), label)
-  for (const name of ['CKB', 'Cryptape', 'Godwoken', 'Nervos Talk Forum', 'Community Fund DAO', 'Nervos Foundation'])
+  for (const name of ['CKB', 'Nervos Talk Forum', 'Community Fund DAO'])
     assert.ok(labels.includes(name), name)
   for (let index = 0; index < zhLinks.length; index++) {
     enLinks[index].props.onClick()
